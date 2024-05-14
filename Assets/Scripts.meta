@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<< HEAD
 guid: 0d8abdba051ea8e4c816dcc5259b93d5
+=======
+guid: 8329f7c8399425645a24d868c3bcfb34
+>>>>>>> feature/#01-game_master
 folderAsset: yes
 DefaultImporter:
   externalObjects: {}
