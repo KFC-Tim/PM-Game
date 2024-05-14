@@ -23,4 +23,9 @@ public class QuestionInput : MonoBehaviour
 
         inputField.text = "";
     }
+
+    public void ButtonDemo()
+    {
+        Debug.Log(inputField.text);
+    }
 }
