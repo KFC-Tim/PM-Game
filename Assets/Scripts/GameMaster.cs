@@ -1,15 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 public class GameMaster : MonoBehaviour
 {
     public QuestionsController QuestionsController;
+    private FieldEventController fieldEventController;
 
     private int currentPlayerIndex = 0;
     private int totalPlayers = 4; // required to have 4 players
     private bool gameIsOver = false;
+    private bool skipQuestion = false;
 
 
     // Start is called before the first frame update
@@ -32,14 +35,29 @@ public class GameMaster : MonoBehaviour
     {
         // Get a question
         Questions question = QuestionsController.AskQuestion();
-        Debug.Log("Player " + (currentPlayerIndex + 1) + " answer this qustions:");
-        Debug.Log(question);
 
-        // Here comes the UserInput
-        string playerAnswer = "";
+        if (!skipQuestion)
+        {
+            Debug.Log("Player " + (currentPlayerIndex + 1) + " answer this qustions:");
+            Debug.Log(question);
 
-        QuestionsController.EvaluateAnswer(playerAnswer, question); 
+            // Here comes the UserInput
+            string playerAnswer = "";
 
+            QuestionsController.EvaluateAnswer(playerAnswer, question);
+        }
+
+
+        //if question was right or skipped
+        //move x fields with selected player
+        Field playerField = new Field();
+
+        if(playerField.IsEventField)
+        {
+            DoFieldEvent();
+        }
+
+        skipQuestion = false;
     }
 
     // Called at the end of a turn
@@ -71,6 +89,30 @@ public class GameMaster : MonoBehaviour
     {
         // Check if one player has 4 players at home
         return false;
+    }
+
+    private void DoFieldEvent()
+    {
+        FieldEvent fieldEvent = fieldEventController.GetFieldEvent();
+        if (fieldEvent == null)
+        {
+            Debug.LogError("Field Event is null");
+            return;
+        }
+
+        if(fieldEvent.IsStorable())
+        {
+            //ask Player if he wants to put it in Inventory
+            //if player wants to put it in inventory -> set Storable to false and return;
+        }
+
+        switch(fieldEvent.GetEventType())
+        {
+            case "SkipQuestion":
+                skipQuestion = true;
+                break;
+        }
+        
     }
 
 }
