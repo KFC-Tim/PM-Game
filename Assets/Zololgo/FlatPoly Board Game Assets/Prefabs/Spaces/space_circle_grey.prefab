@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 4998588174443924}
   - component: {fileID: 33375011504080272}
   - component: {fileID: 23841129203071908}
+  - component: {fileID: 4860417230867020780}
   m_Layer: 0
   m_Name: space_circle_grey
   m_TagString: Untagged
@@ -83,3 +84,16 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &4860417230867020780
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1129795989210926}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d97c2e23c4ea2a14c9dc8a1def38202e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  IsEventField: 1
