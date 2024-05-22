@@ -1808,11 +1808,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 1129795989210926, guid: f855bdaaac920df408516a2a8b5ba3e5, type: 3}
   m_PrefabInstance: {fileID: 466069041}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &469982228 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1098790762095722, guid: 3638f1a3ef68cd1489fc0f0004c95639, type: 3}
-  m_PrefabInstance: {fileID: 295057929}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &518878564
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5417,11 +5412,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6488b6e6bbe8a9c4585b531a71d8211c, type: 3}
---- !u!1 &1144802547 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1699563244076568, guid: da7605f621099bc42a9bd5f91d92aafc, type: 3}
-  m_PrefabInstance: {fileID: 1023102078}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1147143473
 GameObject:
   m_ObjectHideFlags: 0
@@ -8850,8 +8840,8 @@ MonoBehaviour:
   playerPiecePrefab:
   - {fileID: 1560630350}
   - {fileID: 1073280561}
-  - {fileID: 469982228}
-  - {fileID: 1144802547}
+  - {fileID: 631163876}
+  - {fileID: 2127246788}
 --- !u!1001 &1949302973
 PrefabInstance:
   m_ObjectHideFlags: 0

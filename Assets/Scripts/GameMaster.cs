@@ -33,17 +33,7 @@ public class GameMaster : MonoBehaviour
     {
         board = FindObjectOfType<Board>();
 
-        playerPieces[0] = Instantiate(playerPiecePrefab[0], board.boardPathRed[0].transform.position, Quaternion.identity).GetComponent<PlayerPiece>();
-        playerPieces[0].SetPath(board.boardPathRed);
-
-        playerPieces[1] = Instantiate(playerPiecePrefab[1], board.boardPathBlue[0].transform.position, Quaternion.identity).GetComponent<PlayerPiece>();
-        playerPieces[1].SetPath(board.boardPathBlue);
-
-        playerPieces[2] = Instantiate(playerPiecePrefab[2], board.boardPathYellow[0].transform.position, Quaternion.identity).GetComponent<PlayerPiece>();
-        playerPieces[2].SetPath(board.boardPathYellow);
-
-        playerPieces[3] = Instantiate(playerPiecePrefab[3], board.boardPathGreen[0].transform.position, Quaternion.identity).GetComponent<PlayerPiece>();
-        playerPieces[3].SetPath(board.boardPathGreen);
+        InitializePlayerPieces();
 
         submitButton.onClick.AddListener(SubmitAnswer);
 
@@ -136,21 +126,22 @@ public class GameMaster : MonoBehaviour
     }
 
     // Initialize all the player pieces and give them a position
-    /*private void InitializePlayerPieces()
+    private void InitializePlayerPieces()
     {
-        playerPieces = new PlayerPiece[totalPlayers, piecesForPlayer];
+        Vector3 offset = new Vector3(0, 0.35f, 0); // Move 1 unit higher on the y-axis
 
-        for(int i = 0; i < totalPlayers; i++)
-        {
-            for(int j = 0;  j < piecesForPlayer; j++)
-            {
-                PlayerPiece newPiece = Instantiate(playerPiecePrefab[i], CalculateStartPosition(i, j), Quaternion.identity);
-                newPiece.name = "Player " + (i + 1) + " Piece " + (j + 1);
-                newPiece.transform.parent = transform;
-                playerPieces[i, j] = newPiece;
-            }
-        }
-    }*/
+        playerPieces[0] = Instantiate(playerPiecePrefab[0], board.boardPathRed[0].transform.position + offset, Quaternion.identity).GetComponent<PlayerPiece>();
+        playerPieces[0].SetPath(board.boardPathRed);
+
+        playerPieces[1] = Instantiate(playerPiecePrefab[1], board.boardPathBlue[0].transform.position + offset, Quaternion.identity).GetComponent<PlayerPiece>();
+        playerPieces[1].SetPath(board.boardPathBlue);
+
+        playerPieces[2] = Instantiate(playerPiecePrefab[2], board.boardPathYellow[0].transform.position + offset, Quaternion.identity).GetComponent<PlayerPiece>();
+        playerPieces[2].SetPath(board.boardPathYellow);
+
+        playerPieces[3] = Instantiate(playerPiecePrefab[3], board.boardPathGreen[0].transform.position + offset, Quaternion.identity).GetComponent<PlayerPiece>();
+        playerPieces[3].SetPath(board.boardPathGreen);
+    }
 
     // Submit the answer an evalutes the answer
     private void SubmitAnswer()
