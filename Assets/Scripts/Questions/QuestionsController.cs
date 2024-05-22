@@ -11,11 +11,11 @@ public class QuestionsController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        questions.Add(new Questions("Test", new string[] {"A", "B", "C", "D"}, "B", 2, 2));
-        questions.Add(new Questions("Test", new string[] {"A", "B", "C", "D"}, "B", 2, 2));
-        questions.Add(new Questions("Test", new string[] {"A", "B", "C", "D"}, "B", 2, 2));
-        questions.Add(new Questions("Test", new string[] {"A", "B", "C", "D"}, "B", 2, 2));
-        questions.Add(new Questions("Test", new string[] {"A", "B", "C", "D"}, "B", 2, 2));
+        questions.Add(new Questions("Test1", new string[] {"A", "B", "C", "D"}, "B", 2, 2));
+        questions.Add(new Questions("Test2", new string[] {"A", "B", "C", "D"}, "B", 2, 2));
+        questions.Add(new Questions("Test3", new string[] {"A", "B", "C", "D"}, "B", 2, 2));
+        questions.Add(new Questions("Test4", new string[] {"A", "B", "C", "D"}, "B", 2, 2));
+        questions.Add(new Questions("Test5", new string[] {"A", "B", "C", "D"}, "B", 2, 2));
     }
 
 
@@ -30,7 +30,7 @@ public class QuestionsController : MonoBehaviour
     {
         if (playerAnswer.ToLower() == question.correctAnswer.ToLower())
         {
-            Debug.Log("Correct! Player can move " + question.steps + " !");
+            Debug.Log("Correct! Player can move " + question.steps + " fields forword!");
             RemoveQuestion(question);
         }
         else
