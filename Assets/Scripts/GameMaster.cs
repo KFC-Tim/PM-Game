@@ -14,9 +14,10 @@ public class GameMaster : MonoBehaviour
     public TMP_InputField inputField;
     public Button submitButton;
 
-    public PlayerPiece[] playerPiecePrefab;
+    public GameObject[] playerPiecePrefab = new GameObject[4];
+    private PlayerPiece[] playerPieces = new PlayerPiece[4];
 
-    private PlayerPiece[,] playerPieces;
+    //private PlayerPiece[,] playerPieces;
     private Questions currentQuestion;
     private int currentPlayerIndex = 0;
     private int totalPlayers = 4; // required to have 4 players
@@ -24,11 +25,26 @@ public class GameMaster : MonoBehaviour
     private bool gameIsOver = false;
     private bool skipQuestion = false;
 
+    private Board board;
+
 
     // Start is called before the first frame update
     void Start()
     {
-        InitializePlayerPieces();
+        board = FindObjectOfType<Board>();
+
+        playerPieces[0] = Instantiate(playerPiecePrefab[0], board.boardPathRed[0].transform.position, Quaternion.identity).GetComponent<PlayerPiece>();
+        playerPieces[0].SetPath(board.boardPathRed);
+
+        playerPieces[1] = Instantiate(playerPiecePrefab[1], board.boardPathBlue[0].transform.position, Quaternion.identity).GetComponent<PlayerPiece>();
+        playerPieces[1].SetPath(board.boardPathBlue);
+
+        playerPieces[2] = Instantiate(playerPiecePrefab[2], board.boardPathYellow[0].transform.position, Quaternion.identity).GetComponent<PlayerPiece>();
+        playerPieces[2].SetPath(board.boardPathYellow);
+
+        playerPieces[3] = Instantiate(playerPiecePrefab[3], board.boardPathGreen[0].transform.position, Quaternion.identity).GetComponent<PlayerPiece>();
+        playerPieces[3].SetPath(board.boardPathGreen);
+
         submitButton.onClick.AddListener(SubmitAnswer);
 
         // maybe here the random or by join the lobby
@@ -94,10 +110,14 @@ public class GameMaster : MonoBehaviour
             return;
         }
 
+        // Move player on board
+        playerPieces[currentPlayerIndex].MovePiece(2);
+
         // Move to the next player 
         currentPlayerIndex = (currentPlayerIndex + 1) % totalPlayers;
         // Show in an alert or somewhere
         Debug.Log("Player " + (currentPlayerIndex + 1) +"'s turn.");
+
 
         AtTurn();
 
@@ -116,7 +136,7 @@ public class GameMaster : MonoBehaviour
     }
 
     // Initialize all the player pieces and give them a position
-    private void InitializePlayerPieces()
+    /*private void InitializePlayerPieces()
     {
         playerPieces = new PlayerPiece[totalPlayers, piecesForPlayer];
 
@@ -130,7 +150,7 @@ public class GameMaster : MonoBehaviour
                 playerPieces[i, j] = newPiece;
             }
         }
-    }
+    }*/
 
     // Submit the answer an evalutes the answer
     private void SubmitAnswer()
