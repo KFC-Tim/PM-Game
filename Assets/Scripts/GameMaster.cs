@@ -14,13 +14,14 @@ public class GameMaster : MonoBehaviour
     public TMP_InputField inputField;
     public Button submitButton;
 
-    public GameObject[] playerPiecePrefab = new GameObject[4];
-    private PlayerPiece[] playerPieces = new PlayerPiece[4];
+    public GameObject[] playerPiecePrefabs = new GameObject[4];
+    private PlayerPiece[,] playerPieces;
 
     //private PlayerPiece[,] playerPieces;
     private Questions currentQuestion;
     private int currentPlayerIndex = 0;
     private int totalPlayers = 4; // required to have 4 players
+    private int piecesPerPlayer = 4; // each player has 4 pieces
     private int piecesForPlayer = 4;
     private bool gameIsOver = false;
     private bool skipQuestion = false;
@@ -100,8 +101,10 @@ public class GameMaster : MonoBehaviour
             return;
         }
 
+        // TODO here comes a function to select a piece
+
         // Move player on board
-        playerPieces[currentPlayerIndex].MovePiece(2);
+        playerPieces[currentPlayerIndex, 0].MovePiece(2);
 
         // Move to the next player 
         currentPlayerIndex = (currentPlayerIndex + 1) % totalPlayers;
@@ -125,22 +128,58 @@ public class GameMaster : MonoBehaviour
 
     }
 
-    // Initialize all the player pieces and give them a position
+
+    // Function to initialize the player pieces
     private void InitializePlayerPieces()
     {
-        Vector3 offset = new Vector3(0, 0.35f, 0); // Move 1 unit higher on the y-axis
+        playerPieces = new PlayerPiece[totalPlayers, piecesPerPlayer];
+        Vector3 offset = new Vector3(0, 0.35f, 0);
 
-        playerPieces[0] = Instantiate(playerPiecePrefab[0], board.boardPathRed[0].transform.position + offset, Quaternion.identity).GetComponent<PlayerPiece>();
-        playerPieces[0].SetPath(board.boardPathRed);
+        for (int team = 0; team < totalPlayers; team++)
+        {
+            for (int pieceIndex = 0; pieceIndex < piecesPerPlayer; pieceIndex++)
+            {
+                Vector3 startPosition = GetStartPosition(team, pieceIndex) + offset;
+                GameObject pieceInstance = Instantiate(playerPiecePrefabs[team], startPosition, Quaternion.identity);
 
-        playerPieces[1] = Instantiate(playerPiecePrefab[1], board.boardPathBlue[0].transform.position + offset, Quaternion.identity).GetComponent<PlayerPiece>();
-        playerPieces[1].SetPath(board.boardPathBlue);
+                // enabeling the mesh renderer
+                MeshRenderer meshRenderer = pieceInstance.GetComponent<MeshRenderer>();
+                if (meshRenderer != null)
+                {
+                    meshRenderer.enabled = true;
+                }
 
-        playerPieces[2] = Instantiate(playerPiecePrefab[2], board.boardPathYellow[0].transform.position + offset, Quaternion.identity).GetComponent<PlayerPiece>();
-        playerPieces[2].SetPath(board.boardPathYellow);
+                playerPieces[team, pieceIndex] = pieceInstance.GetComponent<PlayerPiece>();
+                playerPieces[team, pieceIndex].SetPath(GetBoardPathForTeam(team));
+            }
+        }
+    }
 
-        playerPieces[3] = Instantiate(playerPiecePrefab[3], board.boardPathGreen[0].transform.position + offset, Quaternion.identity).GetComponent<PlayerPiece>();
-        playerPieces[3].SetPath(board.boardPathGreen);
+    private Vector3 GetStartPosition(int team, int pieceIndex)
+    {
+        // Define start positions based on team and piece index
+        // For example, return positions from predefined start positions for each team
+        switch (team)
+        {
+            case 0: return board.boardPathRed[pieceIndex].transform.position;
+            case 1: return board.boardPathBlue[pieceIndex].transform.position;
+            case 2: return board.boardPathYellow[pieceIndex].transform.position;
+            case 3: return board.boardPathGreen[pieceIndex].transform.position;
+            default: return Vector3.zero;
+        }
+    }
+
+    private GameObject[] GetBoardPathForTeam(int team)
+    {
+        // Return the board path based on the team
+        switch (team)
+        {
+            case 0: return board.boardPathRed;
+            case 1: return board.boardPathBlue;
+            case 2: return board.boardPathYellow;
+            case 3: return board.boardPathGreen;
+            default: return null;
+        }
     }
 
     // Submit the answer an evalutes the answer
