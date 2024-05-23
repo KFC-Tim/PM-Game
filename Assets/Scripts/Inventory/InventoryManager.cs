@@ -32,10 +32,10 @@ public class InventoryManager : MonoBehaviour
             Destroy(child.gameObject);
         }
 
-        foreach (eventC in events)
+        foreach (FieldEvent eventC in events)
         {
             GameObject newText = Instantiate(textPrefab, panel.transform);
-            newText.GetComponent<Text>().text = eventC.name;
+            //newText.GetComponent<Text>().text = eventC.name;
         }
     }
 }
