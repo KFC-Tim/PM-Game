@@ -66,9 +66,9 @@ public class GameMaster : MonoBehaviour
         }
         if (!skipQuestion[currentPlayerIndex])
         {
-            currentQuestion = QuestionsController.AskQuestion();
-            Debug.Log("Player " + (currentPlayerIndex + 1) + " answer this qustions:");
-            Debug.Log(currentQuestion.questionText);
+            //currentQuestion = QuestionsController.AskQuestion();
+            //Debug.Log("Player " + (currentPlayerIndex + 1) + " answer this qustions:");
+            //Debug.Log(currentQuestion.questionText);
             QuestionsController.DisplayQuestion();
         }
         //if question was right or skipped
@@ -102,6 +102,7 @@ public class GameMaster : MonoBehaviour
         {      
             Debug.Log("Game is over. No more turns.");
             // Return to EndSequence
+            
             return;
         }
         
