@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Dynamic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -10,10 +11,17 @@ public class InventoryManager : MonoBehaviour
     public GameObject textPrefab;
     
     private List<FieldEvent>[] eventsInventory = new List<FieldEvent>[4];
+    private (FieldEvent, int) currentEvent = (null, -1);
+    
 
     // Start is called before the first frame update
     void Start()
     {
+        eventsInventory[0] = new List<FieldEvent>();
+        eventsInventory[1] = new List<FieldEvent>();
+        eventsInventory[2] = new List<FieldEvent>();
+        eventsInventory[3] = new List<FieldEvent>();
+        
         FieldEvent e = new FieldEvent("SkipQuestion", true);
         FieldEvent e2 = new FieldEvent("SkipQuestion", true);
         AddCard(0, e);
@@ -30,7 +38,7 @@ public class InventoryManager : MonoBehaviour
         UpdateInventoryUI(playerNumber);
     }
 
-    void UpdateInventoryUI(int playerNumber)
+    public void UpdateInventoryUI(int playerNumber)
     {
         foreach (Transform child in panel.transform)
         {
@@ -67,6 +75,21 @@ public class InventoryManager : MonoBehaviour
     void OnCardClicked(int playerNumber, FieldEvent fieldEvent)
     {
         Debug.Log(fieldEvent.GetEventType() + " triggered by Player " + playerNumber);
+        if (currentEvent.Item2 != -1)
+        {
+            Debug.Log("Cant perform Event because others player event will be done first");
+        }
+        currentEvent = (fieldEvent, playerNumber);
         RemoveCard(playerNumber, fieldEvent);
+    }
+
+    public (FieldEvent, int) GetCurrentEvent()
+    {
+        return currentEvent;
+    }
+
+    public void ClearCurrentEvent()
+    {
+        currentEvent.Item2 = -1;
     }
 }

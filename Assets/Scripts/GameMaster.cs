@@ -21,7 +21,7 @@ public class GameMaster : MonoBehaviour
     private int totalPlayers = 4; // required to have 4 players
     private int piecesForPlayer = 4;
     private bool gameIsOver = false;
-    private bool skipQuestion = false;
+    private bool[] skipQuestion = {false, false, false, false};
     public Button answerButton1;
     public Button answerButton2;
     public Button answerButton3;
@@ -51,12 +51,20 @@ public class GameMaster : MonoBehaviour
     // Called if a player is at the turn    
     public void AtTurn()
     {
+        inventoryManager.UpdateInventoryUI(currentPlayerIndex);
+        (FieldEvent, int) currEvent = inventoryManager.GetCurrentEvent();
+        if (currEvent.Item2 == currentPlayerIndex)
+        {
+            currEvent.Item1.SetStorable(false);
+            DoFieldEvent(currentPlayerIndex, currEvent.Item1);
+        }
+        
         if (gameIsOver)
         {
             Debug.Log("Game is over. No more turns.");
             return;
         }
-        if (!skipQuestion)
+        if (!skipQuestion[currentPlayerIndex])
         {
             currentQuestion = QuestionsController.AskQuestion();
             Debug.Log("Player " + (currentPlayerIndex + 1) + " answer this qustions:");
@@ -65,13 +73,13 @@ public class GameMaster : MonoBehaviour
         }
         //if question was right or skipped
         //move x fields with selected player
-        Field playerField = new Field();
-        if(playerField.IsEventField)
-        {
-            DoFieldEvent(currentPlayerIndex);
-        }
+        //Field playerField = new Field();
+        //if(playerField.IsEventField)
+        //{
+        //    GetFieldEvent(currentPlayerIndex);
+        //}
 
-        skipQuestion = false;
+        skipQuestion[currentPlayerIndex] = false;
     }
 
     // Called at the end of a turn
@@ -142,7 +150,7 @@ public class GameMaster : MonoBehaviour
         return false;
     }
 
-    private void DoFieldEvent(int playerNumber)
+    private void GetFieldEvent(int playerNumber)
     {
         FieldEvent fieldEvent = fieldEventController.GetFieldEvent();
         if (fieldEvent == null)
@@ -150,21 +158,26 @@ public class GameMaster : MonoBehaviour
             Debug.LogError("Field Event is null");
             return;
         }
-
         if(fieldEvent.IsStorable())
         {
             //ask Player if he wants to put it in Inventory
             //if player wants to put it in inventory -> set Storable to false and return;
             inventoryManager.AddCard(playerNumber, fieldEvent);
+            return;
         }
+        
+        DoFieldEvent(playerNumber, fieldEvent);
+    }
 
+    private void DoFieldEvent(int playerNumber, FieldEvent fieldEvent)
+    {
         switch(fieldEvent.GetEventType())
         {
             case "SkipQuestion":
-                skipQuestion = true;
+                skipQuestion[playerNumber] = true;
+                Debug.Log("Player " + (playerNumber+1) + " can skip the next question");
                 break;
         }
-        
     }
 
 }
