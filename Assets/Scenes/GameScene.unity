@@ -7999,10 +7999,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   boardPathRed:
-  - {fileID: 903889800}
-  - {fileID: 359370525}
-  - {fileID: 909696923}
-  - {fileID: 646788253}
   - {fileID: 1861033863}
   - {fileID: 1803608224}
   - {fileID: 866425005}
@@ -8048,10 +8044,6 @@ MonoBehaviour:
   - {fileID: 597888406}
   - {fileID: 1485336846}
   boardPathBlue:
-  - {fileID: 1595513099}
-  - {fileID: 2047542119}
-  - {fileID: 1869434356}
-  - {fileID: 485454974}
   - {fileID: 2129252408}
   - {fileID: 106361065}
   - {fileID: 1508570522}
@@ -8097,10 +8089,6 @@ MonoBehaviour:
   - {fileID: 717707285}
   - {fileID: 838493668}
   boardPathYellow:
-  - {fileID: 1372503808}
-  - {fileID: 409317702}
-  - {fileID: 84563361}
-  - {fileID: 1536063092}
   - {fileID: 556208650}
   - {fileID: 1949302975}
   - {fileID: 50552123}
@@ -8146,10 +8134,6 @@ MonoBehaviour:
   - {fileID: 191887715}
   - {fileID: 1815518449}
   boardPathGreen:
-  - {fileID: 1259124650}
-  - {fileID: 1404981861}
-  - {fileID: 472908206}
-  - {fileID: 723260993}
   - {fileID: 1633900461}
   - {fileID: 610068257}
   - {fileID: 2020043243}
@@ -8194,6 +8178,26 @@ MonoBehaviour:
   - {fileID: 1212147240}
   - {fileID: 1407518546}
   - {fileID: 1933535841}
+  boardStartingRed:
+  - {fileID: 903889800}
+  - {fileID: 359370525}
+  - {fileID: 909696923}
+  - {fileID: 646788253}
+  boardStartingBlue:
+  - {fileID: 1595513099}
+  - {fileID: 2047542119}
+  - {fileID: 1869434356}
+  - {fileID: 485454974}
+  boardStartingYellow:
+  - {fileID: 1372503808}
+  - {fileID: 409317702}
+  - {fileID: 84563361}
+  - {fileID: 1536063092}
+  boardStartingGreen:
+  - {fileID: 1259124650}
+  - {fileID: 1404981861}
+  - {fileID: 472908206}
+  - {fileID: 723260993}
 --- !u!4 &1738777478
 Transform:
   m_ObjectHideFlags: 0

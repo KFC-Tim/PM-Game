@@ -9,4 +9,10 @@ public class Board : MonoBehaviour
     public GameObject[] boardPathBlue = new GameObject[maxGameFields];
     public GameObject[] boardPathYellow = new GameObject[maxGameFields];
     public GameObject[] boardPathGreen = new GameObject[maxGameFields];
+
+    private const int maxStartFields = 4;
+    public GameObject[] boardStartingRed = new GameObject[maxStartFields];
+    public GameObject[] boardStartingBlue = new GameObject[maxStartFields];
+    public GameObject[] boardStartingYellow = new GameObject[maxStartFields];
+    public GameObject[] boardStartingGreen = new GameObject[maxStartFields];
 }

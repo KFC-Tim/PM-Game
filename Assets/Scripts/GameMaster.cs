@@ -161,10 +161,10 @@ public class GameMaster : MonoBehaviour
         // For example, return positions from predefined start positions for each team
         switch (team)
         {
-            case 0: return board.boardPathRed[pieceIndex].transform.position;
-            case 1: return board.boardPathBlue[pieceIndex].transform.position;
-            case 2: return board.boardPathYellow[pieceIndex].transform.position;
-            case 3: return board.boardPathGreen[pieceIndex].transform.position;
+            case 0: return board.boardStartingRed[pieceIndex].transform.position;
+            case 1: return board.boardStartingBlue[pieceIndex].transform.position;
+            case 2: return board.boardStartingYellow[pieceIndex].transform.position;
+            case 3: return board.boardStartingGreen[pieceIndex].transform.position;
             default: return Vector3.zero;
         }
     }
