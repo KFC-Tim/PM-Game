@@ -12,7 +12,7 @@ public class InventoryManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        FieldEvent e = new FieldEvent("SkipQuestion", true);
     }
 
     public void AddCard(FieldEvent eventC) {
@@ -35,7 +35,7 @@ public class InventoryManager : MonoBehaviour
         foreach (FieldEvent eventC in events)
         {
             GameObject newText = Instantiate(textPrefab, panel.transform);
-            //newText.GetComponent<Text>().text = eventC.name;
+            newText.GetComponent<Text>().text = eventC.GetEventType();
         }
     }
 }
