@@ -8,6 +8,7 @@ using TMPro;
 public class QuestionsController : MonoBehaviour
 {
     public GameMaster gameMaster;
+    public GameObject questionCanvas;
     private List<Questions> questions = new List<Questions>();
     public TMP_Text questionText;
     public Button answerButton1;
@@ -21,7 +22,6 @@ public class QuestionsController : MonoBehaviour
 
     private Questions currentQuestion;
 
-
     // Start is called before the first frame update
     void Start()
     {
@@ -30,25 +30,19 @@ public class QuestionsController : MonoBehaviour
         questions.Add(new Questions("Test3", new string[] {"K", "B", "C", "D"}, "B", 2, 2));
         questions.Add(new Questions("Test4", new string[] {"f", "B", "C", "A"}, "A", 2, 2));
         questions.Add(new Questions("Test5", new string[] {"R", "B", "M", "D"}, "M", 2, 2));
-        DisplayQuestion();
+
         answerButton1.onClick.AddListener(() => EvaluateAnswer(answerButton1));
         answerButton2.onClick.AddListener(() => EvaluateAnswer(answerButton2));
         answerButton3.onClick.AddListener(() => EvaluateAnswer(answerButton3));
         answerButton4.onClick.AddListener(() => EvaluateAnswer(answerButton4));
     }
 
-    public void DisplayQuestion()
-    {
-        Questions question = AskQuestion();
-        questionText.text = question.questionText; 
-        UpdateAnswerButtons(question.questionAnsers);
-    
-    }
-
-    public Questions AskQuestion()
+    public void AskQuestion()
     {
         currentQuestion = questions[Random.Range(0, questions.Count)];
-        return currentQuestion;
+        questionText.text = currentQuestion.questionText; 
+        UpdateAnswerButtons(currentQuestion.questionAnsers);
+        ShowCanvas();
 
     }
 
@@ -89,9 +83,14 @@ public class QuestionsController : MonoBehaviour
 
     private IEnumerator WaitAndEndTurn()
     {
-        //waiting for colors
-        yield return new WaitForSeconds(1);
+        // Waiting to see the result
+        yield return new WaitForSeconds(2);
+
+        // Hide the canvas
+        HideCanvas();
         ResetButtonColors();
+
+        // After UI updated en the turn
         gameMaster.EndTurn();
     }
 
@@ -121,6 +120,16 @@ public class QuestionsController : MonoBehaviour
     private void RemoveQuestion(Questions question)
     {
         questions.Remove(question);
+    }
+
+    private void ShowCanvas(){
+        questionCanvas.SetActive(true);
+        Debug.Log("Canvas shown");
+    }
+
+    private void HideCanvas(){
+        questionCanvas.SetActive(false);
+        Debug.Log("Canvas hidden");
     }
 
    

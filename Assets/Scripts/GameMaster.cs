@@ -12,24 +12,41 @@ public class GameMaster : MonoBehaviour
     public QuestionsController QuestionsController;
     private FieldEventController fieldEventController;
 
-    public PlayerPiece[] playerPiecePrefab;
-
+    public GameObject[] playerPiecePrefabs = new GameObject[4];
     private PlayerPiece[,] playerPieces;
-    private Questions currentQuestion;
+
     private int currentPlayerIndex = 0;
+    private int currentPlayerPieceIndex = 0;
     private int totalPlayers = 4; // required to have 4 players
-    private int piecesForPlayer = 4;
+    private int piecesPerPlayer = 4; // required to have 4 pieces
     private bool gameIsOver = false;
     private bool skipQuestion = false;
+    private bool hasSelected = false;
     public Button answerButton1;
     public Button answerButton2;
     public Button answerButton3;
     public Button answerButton4;
 
+    public Button pieceButton1;
+    public Button pieceButton2;
+    public Button pieceButton3;
+    public Button pieceButton4;
+
+    private Board board;
+
+    public GameObject selcetionCanvas;
+
 
     // Start is called before the first frame update
     void Start()
     {
+
+        board = FindObjectOfType<Board>();
+        if(board == null){
+            Debug.Log("Board component not foun in the scene");
+            return;
+        }
+
         InitializePlayerPieces();
 
         // maybe here the random or by join the lobby
@@ -47,10 +64,25 @@ public class GameMaster : MonoBehaviour
         
     }
 
+    // Called if a player is at the turn 
+    public void PreTurn(){
+        // In this Fucntion i want to selcet the playerpiece aand start at turn
+        if (gameIsOver)
+        {
+            Debug.Log("Game is over. No more turns.");
+            return;
+        }
+
+
+
+        AtTurn();
+    }
+
 
     // Called if a player is at the turn    
     public void AtTurn()
     {
+        Debug.Log("At Turn");
         if (gameIsOver)
         {
             Debug.Log("Game is over. No more turns.");
@@ -58,12 +90,14 @@ public class GameMaster : MonoBehaviour
         }
         if (!skipQuestion)
         {
-            currentQuestion = QuestionsController.AskQuestion();
-            Debug.Log("Player " + (currentPlayerIndex + 1) + " answer this qustions:");
-            Debug.Log(currentQuestion.questionText);
-            QuestionsController.DisplayQuestion();
-
+            StartCoroutine(ShowPlayerPiceSelection());
+            hasSelected = false;
+        
         }
+
+
+        playerPieces[currentPlayerIndex, currentPlayerIndex].MovePiece(2);
+
         //if question was right or skipped
         //move x fields with selected player
         Field playerField = new Field();
@@ -101,10 +135,31 @@ public class GameMaster : MonoBehaviour
 
     }
 
-    // Player can select one player piece to move forword with
-    private void SelectPlayerToMove()
-    {
+    public IEnumerator ShowPlayerPiceSelection(){
 
+        selcetionCanvas.SetActive(true);
+        Debug.Log("Show Canvas");
+
+        pieceButton1.onClick.AddListener(() => SelectPlayerPiece(1));
+        pieceButton2.onClick.AddListener(() => SelectPlayerPiece(2));
+        pieceButton3.onClick.AddListener(() => SelectPlayerPiece(3));
+        pieceButton4.onClick.AddListener(() => SelectPlayerPiece(4));
+
+        // Wait until player got selected
+        yield return new WaitUntil(() => hasSelected);
+
+        QuestionsController.AskQuestion();
+   
+    }
+
+    // Player can select one player piece to move forword with
+    private void SelectPlayerPiece(int pieceNumber)
+    {
+        currentPlayerPieceIndex = pieceNumber;
+        hasSelected = true;
+        Debug.Log("Player " + currentPlayerIndex + " got selected!");
+
+        selcetionCanvas.SetActive(false);
     }
 
     // Player moves forword with his piece
@@ -116,26 +171,57 @@ public class GameMaster : MonoBehaviour
     // Initialize all the player pieces and give them a position
     private void InitializePlayerPieces()
     {
-        playerPieces = new PlayerPiece[totalPlayers, piecesForPlayer];
 
-        for(int i = 0; i < totalPlayers; i++)
+        playerPieces = new PlayerPiece[totalPlayers, piecesPerPlayer];
+        Vector3 offset = new Vector3(0, 0.35f, 0); // Move 1 unit higher on the y-axis
+
+        for (int team = 0; team < totalPlayers; team++)
         {
-            for(int j = 0;  j < piecesForPlayer; j++)
+            for (int pieceIndex = 0; pieceIndex < piecesPerPlayer; pieceIndex++)
             {
-                PlayerPiece newPiece = Instantiate(playerPiecePrefab[i], CalculateStartPosition(i, j), Quaternion.identity);
-                newPiece.name = "Player " + (i + 1) + " Piece " + (j + 1);
-                newPiece.transform.parent = transform;
-                playerPieces[i, j] = newPiece;
+                Vector3 startPosition = GetStartPosition(team, pieceIndex) + offset;
+                GameObject pieceInstance = Instantiate(playerPiecePrefabs[team], startPosition, Quaternion.identity);
+
+                // enabeling the mesh renderer
+                MeshRenderer meshRenderer = pieceInstance.GetComponent<MeshRenderer>();
+                if (meshRenderer != null)
+                {
+                    meshRenderer.enabled = true;
+                }
+
+                playerPieces[team, pieceIndex] = pieceInstance.GetComponent<PlayerPiece>();
+                playerPieces[team, pieceIndex].SetPath(GetBoardPathForTeam(team));
             }
         }
     }
 
-    // Calcualtes the start position of the player pieces
-    private Vector3 CalculateStartPosition(int playerIndex, int pieceIndex)
+    private Vector3 GetStartPosition(int team, int pieceIndex)
     {
-        // Here comes the calcualtion
-        return new Vector3(playerIndex, 0, pieceIndex);
+        // Define start positions based on team and piece index
+        // For example, return positions from predefined start positions for each team
+        switch (team)
+        {
+            case 0: return board.boardStartingRed[pieceIndex].transform.position;
+            case 1: return board.boardStartingBlue[pieceIndex].transform.position;
+            case 2: return board.boardStartingYellow[pieceIndex].transform.position;
+            case 3: return board.boardStartingGreen[pieceIndex].transform.position;
+            default: return Vector3.zero;
+        }
     }
+
+    private GameObject[] GetBoardPathForTeam(int team)
+    {
+        // Return the board path based on the team
+        switch (team)
+        {
+            case 0: return board.boardPathRed;
+            case 1: return board.boardPathBlue;
+            case 2: return board.boardPathYellow;
+            case 3: return board.boardPathGreen;
+            default: return null;
+        }
+    }
+
 
     private bool CheckForWin()
     {
