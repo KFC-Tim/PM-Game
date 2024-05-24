@@ -11785,7 +11785,7 @@ MonoBehaviour:
   selectionCanvas: {fileID: 1552657839}
   selectionImage: {fileID: 760271363}
   selectionForeground: {fileID: 1002416018}
-  selectionTitle: {fileID: 1606254700}
+  selectionTitle: {fileID: 90338173}
   selectionText: {fileID: 145946632}
   totalPlayers: 4
   piecesPerPlayer: 4
