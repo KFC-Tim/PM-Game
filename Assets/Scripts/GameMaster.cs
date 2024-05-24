@@ -12,8 +12,6 @@ public class GameMaster : MonoBehaviour
     public QuestionsController QuestionsController;
     public FieldEventController fieldEventController;
     public InventoryManager inventoryManager;
-    public TMP_InputField inputField;
-    public Button submitButton;
 
     public PlayerPiece[] playerPiecePrefab;
 
@@ -24,13 +22,15 @@ public class GameMaster : MonoBehaviour
     private int piecesForPlayer = 4;
     private bool gameIsOver = false;
     private bool skipQuestion = false;
-
-
+    public Button answerButton1;
+    public Button answerButton2;
+    public Button answerButton3;
+    public Button answerButton4;
+    
     // Start is called before the first frame update
     void Start()
     {
         InitializePlayerPieces();
-        submitButton.onClick.AddListener(SubmitAnswer);
 
         // maybe here the random or by join the lobby
         currentPlayerIndex = 0;
@@ -51,25 +51,21 @@ public class GameMaster : MonoBehaviour
     // Called if a player is at the turn    
     public void AtTurn()
     {
-        // Get a question
-        Questions question = QuestionsController.AskQuestion();
-
+        if (gameIsOver)
+        {
+            Debug.Log("Game is over. No more turns.");
+            return;
+        }
         if (!skipQuestion)
         {
             currentQuestion = QuestionsController.AskQuestion();
             Debug.Log("Player " + (currentPlayerIndex + 1) + " answer this qustions:");
             Debug.Log(currentQuestion.questionText);
-
-            inputField.gameObject.SetActive(true);
-            submitButton.gameObject.SetActive(true);
+            QuestionsController.DisplayQuestion();
         }
-
-
         //if question was right or skipped
         //move x fields with selected player
         Field playerField = new Field();
-
-
         if(playerField.IsEventField)
         {
             DoFieldEvent(currentPlayerIndex);
@@ -81,12 +77,6 @@ public class GameMaster : MonoBehaviour
     // Called at the end of a turn
     public void EndTurn()
     {
-        if (gameIsOver)
-        {      
-            Debug.Log("Game is over. No more turns.");
-            // Return to EndSequence
-            return;
-        }
         if (CheckForWin())
         {
             Debug.Log("Player " +  (currentPlayerIndex + 1)  +  " wins!");
@@ -94,13 +84,19 @@ public class GameMaster : MonoBehaviour
             // Return to WinningSequence;
             return;
         }
-
-        // Move to the next player 
-        currentPlayerIndex = (currentPlayerIndex + 1) % totalPlayers;
-        // Show in an alert or somewhere
-        Debug.Log("Player " + (currentPlayerIndex + 1) +"'s turn.");
-
-        AtTurn();
+        if (!gameIsOver)
+        {
+            currentPlayerIndex = (currentPlayerIndex + 1) % totalPlayers;
+            Debug.Log("Player " + (currentPlayerIndex + 1) + "'s turn.");
+            AtTurn();
+        }
+        if (gameIsOver)
+        {      
+            Debug.Log("Game is over. No more turns.");
+            // Return to EndSequence
+            return;
+        }
+        
 
     }
 
@@ -131,20 +127,6 @@ public class GameMaster : MonoBehaviour
                 playerPieces[i, j] = newPiece;
             }
         }
-    }
-
-    // Submit the answer an evalutes the answer
-    private void SubmitAnswer()
-    {
-        string playerAnswer = inputField.text;
-        QuestionsController.EvaluateAnswer(playerAnswer, currentQuestion);
-
-        inputField.gameObject.SetActive(false);
-        submitButton.gameObject.SetActive(false);
-
-        inputField.text = "";
-
-        EndTurn();
     }
 
     // Calcualtes the start position of the player pieces
