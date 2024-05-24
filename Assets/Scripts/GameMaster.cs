@@ -9,39 +9,39 @@ using UnityEngine.UI;
 
 public class GameMaster : MonoBehaviour
 {
-    public QuestionsController QuestionsController;
+    [SerializeField] private QuestionsController questionsController;
     private FieldEventController fieldEventController;
 
-    public GameObject[] playerPiecePrefabs = new GameObject[4];
+    [SerializeField] private GameObject[] playerPiecePrefabs = new GameObject[4];
     private PlayerPiece[,] playerPieces;
+
+    [SerializeField] public Button pieceButton1;
+    [SerializeField] public Button pieceButton2;
+    [SerializeField] public Button pieceButton3;
+    [SerializeField] public Button pieceButton4;
+
+    [SerializeField] private Board board;
+
+    [SerializeField] private GameObject selectionCanvas;
+    [SerializeField] private GameObject selectionImage;
+    [SerializeField] private GameObject selectionForeground;
+    [SerializeField] private GameObject selectionTitle;
+    [SerializeField] private GameObject selectionText;
+
+    [SerializeField] private int totalPlayers = 4; // required to have 4 players
+    [SerializeField] private int piecesPerPlayer = 4; // required to have 4 pieces
 
     private int currentPlayerIndex = 0;
     private int currentPlayerPieceIndex = 0;
-    private int totalPlayers = 4; // required to have 4 players
-    private int piecesPerPlayer = 4; // required to have 4 pieces
+
     private bool gameIsOver = false;
     private bool skipQuestion = false;
     private bool hasSelected = false;
-    public Button answerButton1;
-    public Button answerButton2;
-    public Button answerButton3;
-    public Button answerButton4;
-
-    public Button pieceButton1;
-    public Button pieceButton2;
-    public Button pieceButton3;
-    public Button pieceButton4;
-
-    private Board board;
-
-    public GameObject selcetionCanvas;
 
 
     // Start is called before the first frame update
     void Start()
     {
-
-        board = FindObjectOfType<Board>();
         if(board == null){
             Debug.Log("Board component not foun in the scene");
             return;
@@ -58,44 +58,21 @@ public class GameMaster : MonoBehaviour
     }
 
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
-    // Called if a player is at the turn 
-    public void PreTurn(){
-        // In this Fucntion i want to selcet the playerpiece aand start at turn
-        if (gameIsOver)
-        {
-            Debug.Log("Game is over. No more turns.");
-            return;
-        }
-
-
-
-        AtTurn();
-    }
-
-
     // Called if a player is at the turn    
     public void AtTurn()
     {
-        Debug.Log("At Turn");
         if (gameIsOver)
         {
+            // TODO change scene
             Debug.Log("Game is over. No more turns.");
             return;
         }
         if (!skipQuestion)
         {
-            StartCoroutine(ShowPlayerPiceSelection());
-            hasSelected = false;
-        
+            StartCoroutine(ShowPlayerPiceSelection());    
         }
 
-
+        // TODO move by qutetions steps
         playerPieces[currentPlayerIndex, currentPlayerIndex].MovePiece(2);
 
         //if question was right or skipped
@@ -135,20 +112,37 @@ public class GameMaster : MonoBehaviour
 
     }
 
+    private Color parseHexColor(string hexColor){
+        Color newColor;
+        if(UnityEngine.ColorUtility.TryParseHtmlString(hexColor, out newColor)){
+            return newColor;
+        } else {
+            return Color.red;
+        }
+    }
+
     public IEnumerator ShowPlayerPiceSelection(){
 
-        selcetionCanvas.SetActive(true);
-        Debug.Log("Show Canvas");
+        ChangeSelectionColor();
 
-        pieceButton1.onClick.AddListener(() => SelectPlayerPiece(1));
-        pieceButton2.onClick.AddListener(() => SelectPlayerPiece(2));
-        pieceButton3.onClick.AddListener(() => SelectPlayerPiece(3));
-        pieceButton4.onClick.AddListener(() => SelectPlayerPiece(4));
+        selectionCanvas.SetActive(true);
+        
+        hasSelected = false;
+
+        pieceButton1.onClick.AddListener(() => SelectPlayerPiece(0));
+        pieceButton2.onClick.AddListener(() => SelectPlayerPiece(1));
+        pieceButton3.onClick.AddListener(() => SelectPlayerPiece(2));
+        pieceButton4.onClick.AddListener(() => SelectPlayerPiece(3));
 
         // Wait until player got selected
         yield return new WaitUntil(() => hasSelected);
 
-        QuestionsController.AskQuestion();
+        pieceButton1.onClick.RemoveAllListeners();
+        pieceButton2.onClick.RemoveAllListeners();
+        pieceButton3.onClick.RemoveAllListeners();
+        pieceButton4.onClick.RemoveAllListeners();
+
+        questionsController.AskQuestion();
    
     }
 
@@ -159,14 +153,38 @@ public class GameMaster : MonoBehaviour
         hasSelected = true;
         Debug.Log("Player " + currentPlayerIndex + " got selected!");
 
-        selcetionCanvas.SetActive(false);
+        selectionCanvas.SetActive(false);
     }
 
-    // Player moves forword with his piece
-    private void MovePlayerPiece(int playerIndex, int steps)
-    {
-
+    private void ChangeSelectionColor(){
+        switch(currentPlayerIndex){
+            case 0:
+                selectionImage.GetComponent<Image>().color = parseHexColor("#B6343B");
+                selectionForeground.GetComponent<Image>().color = parseHexColor("#B6343B"); 
+                selectionText.GetComponent<Image>().color = parseHexColor("#9B343C");
+                selectionTitle.GetComponent<Image>().color = parseHexColor("#9B343C"); 
+                break;
+            case 1:
+                selectionImage.GetComponent<Image>().color = parseHexColor("#245DD9");
+                selectionForeground.GetComponent<Image>().color = parseHexColor("#245DD9"); 
+                selectionText.GetComponent<Image>().color = parseHexColor("#1B39C6");
+                selectionTitle.GetComponent<Image>().color = parseHexColor("#1B39C6"); 
+                break;
+            case 2:
+                selectionImage.GetComponent<Image>().color = parseHexColor("#D9BC55");
+                selectionForeground.GetComponent<Image>().color = parseHexColor("#D9BC55"); 
+                selectionText.GetComponent<Image>().color = parseHexColor("#E7AB24");
+                selectionTitle.GetComponent<Image>().color = parseHexColor("#E7AB24"); 
+                break;
+            case 3:
+                selectionImage.GetComponent<Image>().color = parseHexColor("#628543");
+                selectionForeground.GetComponent<Image>().color = parseHexColor("#628543"); 
+                selectionText.GetComponent<Image>().color = parseHexColor("#455F41");
+                selectionTitle.GetComponent<Image>().color = parseHexColor("#455F41"); 
+                break;
+        }
     }
+
 
     // Initialize all the player pieces and give them a position
     private void InitializePlayerPieces()

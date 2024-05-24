@@ -90,6 +90,9 @@ public class QuestionsController : MonoBehaviour
         HideCanvas();
         ResetButtonColors();
 
+        // Waiting to see the board
+        yield return new WaitForSeconds(5);
+
         // After UI updated en the turn
         gameMaster.EndTurn();
     }
@@ -124,12 +127,10 @@ public class QuestionsController : MonoBehaviour
 
     private void ShowCanvas(){
         questionCanvas.SetActive(true);
-        Debug.Log("Canvas shown");
     }
 
     private void HideCanvas(){
         questionCanvas.SetActive(false);
-        Debug.Log("Canvas hidden");
     }
 
    

@@ -1074,7 +1074,7 @@ GameObject:
   - component: {fileID: 145946635}
   - component: {fileID: 145946634}
   m_Layer: 5
-  m_Name: ForegroundFragen
+  m_Name: ForegroundText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11551,21 +11551,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 25ca38bb17c0b8f45866b0f5a914bc06, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  QuestionsController: {fileID: 910898784}
+  questionsController: {fileID: 910898784}
   playerPiecePrefabs:
   - {fileID: 1560630350}
   - {fileID: 1073280561}
   - {fileID: 631163876}
   - {fileID: 2127246788}
-  answerButton1: {fileID: 220159841}
-  answerButton2: {fileID: 1331833610}
-  answerButton3: {fileID: 851473073}
-  answerButton4: {fileID: 356115786}
   pieceButton1: {fileID: 994218197}
   pieceButton2: {fileID: 396993951}
   pieceButton3: {fileID: 912866078}
   pieceButton4: {fileID: 973102492}
-  selcetionCanvas: {fileID: 1552657839}
+  board: {fileID: 1730829172}
+  selectionCanvas: {fileID: 1552657839}
+  selectionImage: {fileID: 760271363}
+  selectionForeground: {fileID: 1002416018}
+  selectionTitle: {fileID: 90338173}
+  selectionText: {fileID: 145946632}
+  totalPlayers: 4
+  piecesPerPlayer: 4
 --- !u!4 &1943950538
 Transform:
   m_ObjectHideFlags: 0
