@@ -11,32 +11,26 @@ public class GameMaster : MonoBehaviour
 {
     public QuestionsController QuestionsController;
     private FieldEventController fieldEventController;
-    public TMP_InputField inputField;
-    public Button submitButton;
 
-    public GameObject[] playerPiecePrefabs = new GameObject[4];
+    public PlayerPiece[] playerPiecePrefab;
+
     private PlayerPiece[,] playerPieces;
-
-    //private PlayerPiece[,] playerPieces;
     private Questions currentQuestion;
     private int currentPlayerIndex = 0;
     private int totalPlayers = 4; // required to have 4 players
-    private int piecesPerPlayer = 4; // each player has 4 pieces
     private int piecesForPlayer = 4;
     private bool gameIsOver = false;
     private bool skipQuestion = false;
-
-    private Board board;
+    public Button answerButton1;
+    public Button answerButton2;
+    public Button answerButton3;
+    public Button answerButton4;
 
 
     // Start is called before the first frame update
     void Start()
     {
-        board = FindObjectOfType<Board>();
-
         InitializePlayerPieces();
-
-        submitButton.onClick.AddListener(SubmitAnswer);
 
         // maybe here the random or by join the lobby
         currentPlayerIndex = 0;
@@ -57,25 +51,22 @@ public class GameMaster : MonoBehaviour
     // Called if a player is at the turn    
     public void AtTurn()
     {
-        // Get a question
-        Questions question = QuestionsController.AskQuestion();
-
+        if (gameIsOver)
+        {
+            Debug.Log("Game is over. No more turns.");
+            return;
+        }
         if (!skipQuestion)
         {
             currentQuestion = QuestionsController.AskQuestion();
             Debug.Log("Player " + (currentPlayerIndex + 1) + " answer this qustions:");
             Debug.Log(currentQuestion.questionText);
+            QuestionsController.DisplayQuestion();
 
-            inputField.gameObject.SetActive(true);
-            submitButton.gameObject.SetActive(true);
         }
-
-
         //if question was right or skipped
         //move x fields with selected player
         Field playerField = new Field();
-
-
         if(playerField.IsEventField)
         {
             DoFieldEvent();
@@ -87,12 +78,6 @@ public class GameMaster : MonoBehaviour
     // Called at the end of a turn
     public void EndTurn()
     {
-        if (gameIsOver)
-        {      
-            Debug.Log("Game is over. No more turns.");
-            // Return to EndSequence
-            return;
-        }
         if (CheckForWin())
         {
             Debug.Log("Player " +  (currentPlayerIndex + 1)  +  " wins!");
@@ -100,19 +85,19 @@ public class GameMaster : MonoBehaviour
             // Return to WinningSequence;
             return;
         }
-
-        // TODO here comes a function to select a piece
-
-        // Move player on board
-        playerPieces[currentPlayerIndex, 0].MovePiece(2);
-
-        // Move to the next player 
-        currentPlayerIndex = (currentPlayerIndex + 1) % totalPlayers;
-        // Show in an alert or somewhere
-        Debug.Log("Player " + (currentPlayerIndex + 1) +"'s turn.");
-
-
-        AtTurn();
+        if (!gameIsOver)
+        {
+            currentPlayerIndex = (currentPlayerIndex + 1) % totalPlayers;
+            Debug.Log("Player " + (currentPlayerIndex + 1) + "'s turn.");
+            AtTurn();
+        }
+        if (gameIsOver)
+        {      
+            Debug.Log("Game is over. No more turns.");
+            // Return to EndSequence
+            return;
+        }
+        
 
     }
 
@@ -128,72 +113,21 @@ public class GameMaster : MonoBehaviour
 
     }
 
-
-    // Function to initialize the player pieces
+    // Initialize all the player pieces and give them a position
     private void InitializePlayerPieces()
     {
-        playerPieces = new PlayerPiece[totalPlayers, piecesPerPlayer];
-        Vector3 offset = new Vector3(0, 0.35f, 0);
+        playerPieces = new PlayerPiece[totalPlayers, piecesForPlayer];
 
-        for (int team = 0; team < totalPlayers; team++)
+        for(int i = 0; i < totalPlayers; i++)
         {
-            for (int pieceIndex = 0; pieceIndex < piecesPerPlayer; pieceIndex++)
+            for(int j = 0;  j < piecesForPlayer; j++)
             {
-                Vector3 startPosition = GetStartPosition(team, pieceIndex) + offset;
-                GameObject pieceInstance = Instantiate(playerPiecePrefabs[team], startPosition, Quaternion.identity);
-
-                // enabeling the mesh renderer
-                MeshRenderer meshRenderer = pieceInstance.GetComponent<MeshRenderer>();
-                if (meshRenderer != null)
-                {
-                    meshRenderer.enabled = true;
-                }
-
-                playerPieces[team, pieceIndex] = pieceInstance.GetComponent<PlayerPiece>();
-                playerPieces[team, pieceIndex].SetPath(GetBoardPathForTeam(team));
+                PlayerPiece newPiece = Instantiate(playerPiecePrefab[i], CalculateStartPosition(i, j), Quaternion.identity);
+                newPiece.name = "Player " + (i + 1) + " Piece " + (j + 1);
+                newPiece.transform.parent = transform;
+                playerPieces[i, j] = newPiece;
             }
         }
-    }
-
-    private Vector3 GetStartPosition(int team, int pieceIndex)
-    {
-        // Define start positions based on team and piece index
-        // For example, return positions from predefined start positions for each team
-        switch (team)
-        {
-            case 0: return board.boardStartingRed[pieceIndex].transform.position;
-            case 1: return board.boardStartingBlue[pieceIndex].transform.position;
-            case 2: return board.boardStartingYellow[pieceIndex].transform.position;
-            case 3: return board.boardStartingGreen[pieceIndex].transform.position;
-            default: return Vector3.zero;
-        }
-    }
-
-    private GameObject[] GetBoardPathForTeam(int team)
-    {
-        // Return the board path based on the team
-        switch (team)
-        {
-            case 0: return board.boardPathRed;
-            case 1: return board.boardPathBlue;
-            case 2: return board.boardPathYellow;
-            case 3: return board.boardPathGreen;
-            default: return null;
-        }
-    }
-
-    // Submit the answer an evalutes the answer
-    private void SubmitAnswer()
-    {
-        string playerAnswer = inputField.text;
-        QuestionsController.EvaluateAnswer(playerAnswer, currentQuestion);
-
-        inputField.gameObject.SetActive(false);
-        submitButton.gameObject.SetActive(false);
-
-        inputField.text = "";
-
-        EndTurn();
     }
 
     // Calcualtes the start position of the player pieces
