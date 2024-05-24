@@ -9,27 +9,45 @@ using UnityEngine.UI;
 
 public class GameMaster : MonoBehaviour
 {
-    public QuestionsController QuestionsController;
-    public FieldEventController fieldEventController;
     public InventoryManager inventoryManager;
+    [SerializeField] private QuestionsController questionsController;
+    private FieldEventController fieldEventController;
 
-    public PlayerPiece[] playerPiecePrefab;
-
+    [SerializeField] private GameObject[] playerPiecePrefabs = new GameObject[4];
     private PlayerPiece[,] playerPieces;
-    private Questions currentQuestion;
+
+    [SerializeField] public Button pieceButton1;
+    [SerializeField] public Button pieceButton2;
+    [SerializeField] public Button pieceButton3;
+    [SerializeField] public Button pieceButton4;
+
+    [SerializeField] private Board board;
+
+    [SerializeField] private GameObject selectionCanvas;
+    [SerializeField] private GameObject selectionImage;
+    [SerializeField] private GameObject selectionForeground;
+    [SerializeField] private GameObject selectionTitle;
+    [SerializeField] private GameObject selectionText;
+
+    [SerializeField] private int totalPlayers = 4; // required to have 4 players
+    [SerializeField] private int piecesPerPlayer = 4; // required to have 4 pieces
+
     private int currentPlayerIndex = 0;
-    private int totalPlayers = 4; // required to have 4 players
-    private int piecesForPlayer = 4;
+    private int currentPlayerPieceIndex = 0;
+
     private bool gameIsOver = false;
     private bool[] skipQuestion = {false, false, false, false};
-    public Button answerButton1;
-    public Button answerButton2;
-    public Button answerButton3;
-    public Button answerButton4;
-    
+    private bool hasSelected = false;
+
+
     // Start is called before the first frame update
     void Start()
     {
+        if(board == null){
+            Debug.Log("Board component not foun in the scene");
+            return;
+        }
+
         InitializePlayerPieces();
 
         // maybe here the random or by join the lobby
@@ -61,16 +79,18 @@ public class GameMaster : MonoBehaviour
         
         if (gameIsOver)
         {
+            // TODO change scene
             Debug.Log("Game is over. No more turns.");
             return;
         }
         if (!skipQuestion[currentPlayerIndex])
         {
-            //currentQuestion = QuestionsController.AskQuestion();
-            //Debug.Log("Player " + (currentPlayerIndex + 1) + " answer this qustions:");
-            //Debug.Log(currentQuestion.questionText);
-            QuestionsController.DisplayQuestion();
+            StartCoroutine(ShowPlayerPiceSelection());    
         }
+
+        // TODO move by qutetions steps
+        playerPieces[currentPlayerIndex, currentPlayerIndex].MovePiece(2);
+
         //if question was right or skipped
         //move x fields with selected player
         //Field playerField = new Field();
@@ -102,48 +122,140 @@ public class GameMaster : MonoBehaviour
         {      
             Debug.Log("Game is over. No more turns.");
             // Return to EndSequence
-            
             return;
         }
         
 
     }
 
+    private Color parseHexColor(string hexColor){
+        Color newColor;
+        if(UnityEngine.ColorUtility.TryParseHtmlString(hexColor, out newColor)){
+            return newColor;
+        } else {
+            return Color.red;
+        }
+    }
+
+    public IEnumerator ShowPlayerPiceSelection(){
+
+        ChangeSelectionColor();
+
+        selectionCanvas.SetActive(true);
+        
+        hasSelected = false;
+
+        pieceButton1.onClick.AddListener(() => SelectPlayerPiece(0));
+        pieceButton2.onClick.AddListener(() => SelectPlayerPiece(1));
+        pieceButton3.onClick.AddListener(() => SelectPlayerPiece(2));
+        pieceButton4.onClick.AddListener(() => SelectPlayerPiece(3));
+
+        // Wait until player got selected
+        yield return new WaitUntil(() => hasSelected);
+
+        pieceButton1.onClick.RemoveAllListeners();
+        pieceButton2.onClick.RemoveAllListeners();
+        pieceButton3.onClick.RemoveAllListeners();
+        pieceButton4.onClick.RemoveAllListeners();
+
+        questionsController.AskQuestion();
+   
+    }
+
     // Player can select one player piece to move forword with
-    private void SelectPlayerToMove()
+    private void SelectPlayerPiece(int pieceNumber)
     {
+        currentPlayerPieceIndex = pieceNumber;
+        hasSelected = true;
+        Debug.Log("Player " + currentPlayerIndex + " got selected!");
 
+        selectionCanvas.SetActive(false);
     }
 
-    // Player moves forword with his piece
-    private void MovePlayerPiece(int playerIndex, int steps)
-    {
-
+    private void ChangeSelectionColor(){
+        switch(currentPlayerIndex){
+            case 0:
+                selectionImage.GetComponent<Image>().color = parseHexColor("#B6343B");
+                selectionForeground.GetComponent<Image>().color = parseHexColor("#B6343B"); 
+                selectionText.GetComponent<Image>().color = parseHexColor("#9B343C");
+                selectionTitle.GetComponent<Image>().color = parseHexColor("#9B343C"); 
+                break;
+            case 1:
+                selectionImage.GetComponent<Image>().color = parseHexColor("#245DD9");
+                selectionForeground.GetComponent<Image>().color = parseHexColor("#245DD9"); 
+                selectionText.GetComponent<Image>().color = parseHexColor("#1B39C6");
+                selectionTitle.GetComponent<Image>().color = parseHexColor("#1B39C6"); 
+                break;
+            case 2:
+                selectionImage.GetComponent<Image>().color = parseHexColor("#D9BC55");
+                selectionForeground.GetComponent<Image>().color = parseHexColor("#D9BC55"); 
+                selectionText.GetComponent<Image>().color = parseHexColor("#E7AB24");
+                selectionTitle.GetComponent<Image>().color = parseHexColor("#E7AB24"); 
+                break;
+            case 3:
+                selectionImage.GetComponent<Image>().color = parseHexColor("#628543");
+                selectionForeground.GetComponent<Image>().color = parseHexColor("#628543"); 
+                selectionText.GetComponent<Image>().color = parseHexColor("#455F41");
+                selectionTitle.GetComponent<Image>().color = parseHexColor("#455F41"); 
+                break;
+        }
     }
+
 
     // Initialize all the player pieces and give them a position
     private void InitializePlayerPieces()
     {
-        playerPieces = new PlayerPiece[totalPlayers, piecesForPlayer];
 
-        for(int i = 0; i < totalPlayers; i++)
+        playerPieces = new PlayerPiece[totalPlayers, piecesPerPlayer];
+        Vector3 offset = new Vector3(0, 0.35f, 0); // Move 1 unit higher on the y-axis
+
+        for (int team = 0; team < totalPlayers; team++)
         {
-            for(int j = 0;  j < piecesForPlayer; j++)
+            for (int pieceIndex = 0; pieceIndex < piecesPerPlayer; pieceIndex++)
             {
-                PlayerPiece newPiece = Instantiate(playerPiecePrefab[i], CalculateStartPosition(i, j), Quaternion.identity);
-                newPiece.name = "Player " + (i + 1) + " Piece " + (j + 1);
-                newPiece.transform.parent = transform;
-                playerPieces[i, j] = newPiece;
+                Vector3 startPosition = GetStartPosition(team, pieceIndex) + offset;
+                GameObject pieceInstance = Instantiate(playerPiecePrefabs[team], startPosition, Quaternion.identity);
+
+                // enabeling the mesh renderer
+                MeshRenderer meshRenderer = pieceInstance.GetComponent<MeshRenderer>();
+                if (meshRenderer != null)
+                {
+                    meshRenderer.enabled = true;
+                }
+
+                playerPieces[team, pieceIndex] = pieceInstance.GetComponent<PlayerPiece>();
+                playerPieces[team, pieceIndex].SetPath(GetBoardPathForTeam(team));
             }
         }
     }
 
-    // Calcualtes the start position of the player pieces
-    private Vector3 CalculateStartPosition(int playerIndex, int pieceIndex)
+    private Vector3 GetStartPosition(int team, int pieceIndex)
     {
-        // Here comes the calcualtion
-        return new Vector3(playerIndex, 0, pieceIndex);
+        // Define start positions based on team and piece index
+        // For example, return positions from predefined start positions for each team
+        switch (team)
+        {
+            case 0: return board.boardStartingRed[pieceIndex].transform.position;
+            case 1: return board.boardStartingBlue[pieceIndex].transform.position;
+            case 2: return board.boardStartingYellow[pieceIndex].transform.position;
+            case 3: return board.boardStartingGreen[pieceIndex].transform.position;
+            default: return Vector3.zero;
+        }
     }
+
+    private GameObject[] GetBoardPathForTeam(int team)
+    {
+        // Return the board path based on the team
+        switch (team)
+        {
+            case 0: return board.boardPathRed;
+            case 1: return board.boardPathBlue;
+            case 2: return board.boardPathYellow;
+            case 3: return board.boardPathGreen;
+            default: return null;
+        }
+    }
+
 
     private bool CheckForWin()
     {
@@ -159,6 +271,7 @@ public class GameMaster : MonoBehaviour
             Debug.LogError("Field Event is null");
             return;
         }
+
         if(fieldEvent.IsStorable())
         {
             //ask Player if he wants to put it in Inventory
@@ -179,6 +292,7 @@ public class GameMaster : MonoBehaviour
                 Debug.Log("Player " + (playerNumber+1) + " can skip the next question");
                 break;
         }
+        
     }
 
 }

@@ -4,13 +4,30 @@ using UnityEngine;
 
 public class PlayerPiece : MonoBehaviour
 {
-    public Vector3 startPosition;
+
+    public GameObject[] path;
+    private int currentPosition = 0;
     public bool isHome;
 
-    public PlayerPiece(Vector3 pos)
+    // Method to set the path for this player piece
+    public void SetPath(GameObject[] newPath)
     {
-        startPosition = pos;
-        isHome = true;
+        path = newPath;
+    }
 
+    // Method to move the player piece along the path
+    public void MovePiece(int steps)
+    {
+        int targetPosition = currentPosition + steps;
+
+        if (targetPosition < path.Length) 
+        {
+            transform.position = path[targetPosition].transform.position;
+            currentPosition = targetPosition;
+        }
+        else
+        {
+            Debug.Log("Cannot move, target position is out of bounds.");
+        }
     }
 }
