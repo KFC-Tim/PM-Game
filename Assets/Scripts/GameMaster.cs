@@ -70,12 +70,14 @@ public class GameMaster : MonoBehaviour
     public void AtTurn()
     {
         inventoryManager.UpdateInventoryUI(currentPlayerIndex);
-        (FieldEvent, int) currEvent = inventoryManager.GetCurrentEvent();
-        if (currEvent.Item2 == currentPlayerIndex)
+        FieldEvent currEvent = inventoryManager.GetCurrentEvent(currentPlayerIndex);
+        if (currEvent != null)
         {
-            currEvent.Item1.SetStorable(false);
-            DoFieldEvent(currentPlayerIndex, currEvent.Item1);
+            currEvent.SetStorable(false);
+            DoFieldEvent(currentPlayerIndex, currEvent);
+            inventoryManager.ClearCurrentEvent(currentPlayerIndex);
         }
+        
         
         if (gameIsOver)
         {
@@ -90,14 +92,6 @@ public class GameMaster : MonoBehaviour
 
         // TODO move by qutetions steps
         playerPieces[currentPlayerIndex, currentPlayerIndex].MovePiece(2);
-
-        //if question was right or skipped
-        //move x fields with selected player
-        //Field playerField = new Field();
-        //if(playerField.IsEventField)
-        //{
-        //    GetFieldEvent(currentPlayerIndex);
-        //}
 
         skipQuestion[currentPlayerIndex] = false;
     }
@@ -285,14 +279,17 @@ public class GameMaster : MonoBehaviour
 
     private void DoFieldEvent(int playerNumber, FieldEvent fieldEvent)
     {
-        switch(fieldEvent.GetEventType())
+        switch (fieldEvent.GetEventType())
         {
             case "SkipQuestion":
                 skipQuestion[playerNumber] = true;
-                Debug.Log("Player " + (playerNumber+1) + " can skip the next question");
+                Debug.Log("Player " + (playerNumber + 1) + " can skip the next question");
                 break;
         }
-        
     }
 
+    public bool GetSkipQuestion()
+    {
+        return skipQuestion[currentPlayerIndex];
+    }
 }

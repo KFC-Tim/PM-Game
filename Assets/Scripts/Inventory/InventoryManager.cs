@@ -11,7 +11,7 @@ public class InventoryManager : MonoBehaviour
     public GameObject textPrefab;
     
     private List<FieldEvent>[] eventsInventory = new List<FieldEvent>[4];
-    private (FieldEvent, int) currentEvent = (null, -1);
+    private FieldEvent [] currentEvent = {null, null, null, null};
     
 
     // Start is called before the first frame update
@@ -75,21 +75,21 @@ public class InventoryManager : MonoBehaviour
     void OnCardClicked(int playerNumber, FieldEvent fieldEvent)
     {
         Debug.Log(fieldEvent.GetEventType() + " triggered by Player " + playerNumber);
-        if (currentEvent.Item2 != -1)
+        if (currentEvent[playerNumber] != null)
         {
             Debug.Log("Cant perform Event because others player event will be done first");
         }
-        currentEvent = (fieldEvent, playerNumber);
+        currentEvent[playerNumber] = fieldEvent;
         RemoveCard(playerNumber, fieldEvent);
     }
 
-    public (FieldEvent, int) GetCurrentEvent()
+    public FieldEvent GetCurrentEvent(int playerNumber)
     {
-        return currentEvent;
+        return currentEvent[playerNumber];
     }
 
-    public void ClearCurrentEvent()
+    public void ClearCurrentEvent(int playerNumber)
     {
-        currentEvent.Item2 = -1;
+        currentEvent[playerNumber] = null;
     }
 }
