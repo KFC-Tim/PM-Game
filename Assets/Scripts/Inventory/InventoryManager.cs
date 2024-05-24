@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 
 public class InventoryManager : MonoBehaviour
 {
@@ -13,6 +15,9 @@ public class InventoryManager : MonoBehaviour
     void Start()
     {
         FieldEvent e = new FieldEvent("SkipQuestion", true);
+        FieldEvent e2 = new FieldEvent("SkipQuestion", true);
+        AddCard(e);
+        AddCard(e2);
     }
 
     public void AddCard(FieldEvent eventC) {
@@ -35,7 +40,33 @@ public class InventoryManager : MonoBehaviour
         foreach (FieldEvent eventC in events)
         {
             GameObject newText = Instantiate(textPrefab, panel.transform);
-            newText.GetComponent<Text>().text = eventC.GetEventType();
+            TextMeshProUGUI textComponent = newText.GetComponent<TextMeshProUGUI>();
+            Button buttonComponent = newText.GetComponent<Button>();
+
+
+            if (textComponent != null)
+            {
+                textComponent.text = eventC.GetEventType();
+            }
+            else
+            {
+                Debug.LogError("Text component not found on the instantiated prefab.");
+            }
+
+            if (buttonComponent != null)
+            {
+                buttonComponent.onClick.AddListener(() => OnCardClicked(eventC));
+            }
+            else
+            {
+                Debug.LogError("Button component not found on the instantiated prefab.");
+            }
         }
+    }
+
+    void OnCardClicked(FieldEvent fieldEvent)
+    {
+        Debug.Log(fieldEvent.GetEventType() + " triggered!");
+        RemoveCard(fieldEvent);
     }
 }
