@@ -10,7 +10,8 @@ using UnityEngine.UI;
 public class GameMaster : MonoBehaviour
 {
     public QuestionsController QuestionsController;
-    private FieldEventController fieldEventController;
+    public FieldEventController fieldEventController;
+    public InventoryManager inventoryManager;
     public TMP_InputField inputField;
     public Button submitButton;
 
@@ -71,7 +72,7 @@ public class GameMaster : MonoBehaviour
 
         if(playerField.IsEventField)
         {
-            DoFieldEvent();
+            DoFieldEvent(currentPlayerIndex);
         }
 
         skipQuestion = false;
@@ -159,7 +160,7 @@ public class GameMaster : MonoBehaviour
         return false;
     }
 
-    private void DoFieldEvent()
+    private void DoFieldEvent(int playerNumber)
     {
         FieldEvent fieldEvent = fieldEventController.GetFieldEvent();
         if (fieldEvent == null)
@@ -172,6 +173,7 @@ public class GameMaster : MonoBehaviour
         {
             //ask Player if he wants to put it in Inventory
             //if player wants to put it in inventory -> set Storable to false and return;
+            inventoryManager.AddCard(playerNumber, fieldEvent);
         }
 
         switch(fieldEvent.GetEventType())

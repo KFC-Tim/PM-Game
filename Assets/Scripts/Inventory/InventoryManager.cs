@@ -8,36 +8,36 @@ public class InventoryManager : MonoBehaviour
 {
     public GameObject panel;
     public GameObject textPrefab;
-
-    private List<FieldEvent> events = new List<FieldEvent>();
+    
+    private List<FieldEvent>[] eventsInventory = new List<FieldEvent>[4];
 
     // Start is called before the first frame update
     void Start()
     {
         FieldEvent e = new FieldEvent("SkipQuestion", true);
         FieldEvent e2 = new FieldEvent("SkipQuestion", true);
-        AddCard(e);
-        AddCard(e2);
+        AddCard(0, e);
+        AddCard(0, e2);
     }
 
-    public void AddCard(FieldEvent eventC) {
-        events.Add(eventC);
-        UpdateInventoryUI();
+    public void AddCard(int playerNumber, FieldEvent eventC) {
+        eventsInventory[playerNumber].Add(eventC);
+        UpdateInventoryUI(playerNumber);
     }
 
-    public void RemoveCard(FieldEvent eventC) {
-        events.Remove(eventC);
-        UpdateInventoryUI();
+    public void RemoveCard(int playerNumber, FieldEvent eventC) {
+        eventsInventory[playerNumber].Remove(eventC);
+        UpdateInventoryUI(playerNumber);
     }
 
-    void UpdateInventoryUI()
+    void UpdateInventoryUI(int playerNumber)
     {
         foreach (Transform child in panel.transform)
         {
             Destroy(child.gameObject);
         }
 
-        foreach (FieldEvent eventC in events)
+        foreach (FieldEvent eventC in eventsInventory[playerNumber])
         {
             GameObject newText = Instantiate(textPrefab, panel.transform);
             TextMeshProUGUI textComponent = newText.GetComponent<TextMeshProUGUI>();
@@ -55,7 +55,7 @@ public class InventoryManager : MonoBehaviour
 
             if (buttonComponent != null)
             {
-                buttonComponent.onClick.AddListener(() => OnCardClicked(eventC));
+                buttonComponent.onClick.AddListener(() => OnCardClicked(playerNumber, eventC));
             }
             else
             {
@@ -64,9 +64,9 @@ public class InventoryManager : MonoBehaviour
         }
     }
 
-    void OnCardClicked(FieldEvent fieldEvent)
+    void OnCardClicked(int playerNumber, FieldEvent fieldEvent)
     {
-        Debug.Log(fieldEvent.GetEventType() + " triggered!");
-        RemoveCard(fieldEvent);
+        Debug.Log(fieldEvent.GetEventType() + " triggered by Player " + playerNumber);
+        RemoveCard(playerNumber, fieldEvent);
     }
 }
