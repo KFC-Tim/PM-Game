@@ -78,9 +78,14 @@ public class GameMaster : MonoBehaviour
             Debug.Log("Game is over. No more turns.");
             return;
         }
+        //TODO implement EndTurn when SkipQuestion is true
         if (!skipQuestion[currentPlayerIndex])
         {
             StartCoroutine(ShowPlayerPiceSelection());
+        }
+        else
+        {
+            EndTurn();
         }
         skipQuestion[currentPlayerIndex] = false;
 
