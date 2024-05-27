@@ -13,7 +13,7 @@ public class GameMaster : MonoBehaviour
     private FieldEventController fieldEventController;
 
     [SerializeField] private GameObject[] playerPiecePrefabs = new GameObject[4];
-    private PlayerPiece[,] playerPieces;
+    public PlayerPiece[,] playerPieces;
 
     [SerializeField] public Button pieceButton1;
     [SerializeField] public Button pieceButton2;
@@ -31,12 +31,13 @@ public class GameMaster : MonoBehaviour
     [SerializeField] private int totalPlayers = 4; // required to have 4 players
     [SerializeField] private int piecesPerPlayer = 4; // required to have 4 pieces
 
-    private int currentPlayerIndex = 0;
+    public int currentPlayerIndex = 0;
     private int currentPlayerPieceIndex = 0;
 
     private bool gameIsOver = false;
     private bool skipQuestion = false;
     private bool hasSelected = false;
+
 
 
     // Start is called before the first frame update
@@ -73,7 +74,7 @@ public class GameMaster : MonoBehaviour
         }
 
         // TODO move by qutetions steps
-        playerPieces[currentPlayerIndex, currentPlayerIndex].MovePiece(2);
+        //playerPieces[currentPlayerIndex, currentPlayerIndex].MovePiece(2);
 
         //if question was right or skipped
         //move x fields with selected player
