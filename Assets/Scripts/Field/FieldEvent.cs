@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FieldEvent : ScriptableObject
+public class FieldEvent
 {
     private bool storable;
     private string eventType;
