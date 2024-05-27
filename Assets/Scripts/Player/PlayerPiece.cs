@@ -30,4 +30,9 @@ public class PlayerPiece : MonoBehaviour
             Debug.Log("Cannot move, target position is out of bounds.");
         }
     }
+
+    public GameObject GetGameObjectPosition()
+    {
+        return path[currentPosition];
+    }
 }

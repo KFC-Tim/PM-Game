@@ -9,8 +9,9 @@ using UnityEngine.UI;
 
 public class GameMaster : MonoBehaviour
 {
+    public InventoryManager inventoryManager;
     [SerializeField] private QuestionsController questionsController;
-    private FieldEventController fieldEventController;
+    public FieldEventController fieldEventController;
 
     [SerializeField] private GameObject[] playerPiecePrefabs = new GameObject[4];
     public PlayerPiece[,] playerPieces;
@@ -35,7 +36,7 @@ public class GameMaster : MonoBehaviour
     public int currentPlayerPieceIndex = 0;
 
     private bool gameIsOver = false;
-    private bool skipQuestion = false;
+    private bool[] skipQuestion = {false, false, false, false};
     private bool hasSelected = false;
 
 
@@ -73,27 +74,36 @@ public class GameMaster : MonoBehaviour
     // Called if a player is at the turn    
     public void AtTurn()
     {
+        inventoryManager.UpdateInventoryUI(currentPlayerIndex);
+        FieldEvent currEvent = inventoryManager.GetCurrentEvent(currentPlayerIndex);
+        if (currEvent != null)
+        {
+            currEvent.SetStorable(false);
+            DoFieldEvent(currentPlayerIndex, currEvent);
+            inventoryManager.ClearCurrentEvent(currentPlayerIndex);
+        }
+        
+        
         if (gameIsOver)
         {
             // TODO change scene
             Debug.Log("Game is over. No more turns.");
             return;
         }
-        if (!skipQuestion)
+        if (!skipQuestion[currentPlayerIndex])
         {
-            StartCoroutine(ShowPlayerPiceSelection());    
+            StartCoroutine(ShowPlayerPiceSelection());
         }
+        skipQuestion[currentPlayerIndex] = false;
 
         // TODO move by qutetions steps
-        //if question was right or skipped
-        //move x fields with selected player
-        Field playerField = new Field();
-        if(playerField.IsEventField)
-        {
-            DoFieldEvent();
-        }
+        GameObject currPositionGameObj = playerPieces[currentPlayerIndex, currentPlayerIndex].GetGameObjectPosition();
+        Field currField = currPositionGameObj.GetComponent<Field>();
 
-        skipQuestion = false;
+        if (!currField.IsUnityNull() && currField.IsEventField)
+        {
+            GetFieldEvent(currentPlayerIndex);
+        }
     }
     
     // Called at the end of a turn
@@ -257,7 +267,7 @@ public class GameMaster : MonoBehaviour
         return false;
     }
 
-    private void DoFieldEvent()
+    private void GetFieldEvent(int playerNumber)
     {
         FieldEvent fieldEvent = fieldEventController.GetFieldEvent();
         if (fieldEvent == null)
@@ -270,15 +280,26 @@ public class GameMaster : MonoBehaviour
         {
             //ask Player if he wants to put it in Inventory
             //if player wants to put it in inventory -> set Storable to false and return;
-        }
-
-        switch(fieldEvent.GetEventType())
-        {
-            case "SkipQuestion":
-                skipQuestion = true;
-                break;
+            inventoryManager.AddCard(playerNumber, fieldEvent);
+            return;
         }
         
+        DoFieldEvent(playerNumber, fieldEvent);
     }
 
+    private void DoFieldEvent(int playerNumber, FieldEvent fieldEvent)
+    {
+        switch (fieldEvent.GetEventType())
+        {
+            case "SkipQuestion":
+                skipQuestion[playerNumber] = true;
+                Debug.Log("Player " + (playerNumber + 1) + " can skip the next question");
+                break;
+        }
+    }
+
+    public bool GetSkipQuestion()
+    {
+        return skipQuestion[currentPlayerIndex];
+    }
 }
