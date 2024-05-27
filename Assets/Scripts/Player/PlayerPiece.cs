@@ -6,7 +6,7 @@ public class PlayerPiece : MonoBehaviour
 {
 
     public GameObject[] path;
-    private int currentPosition = 0;
+    public int currentPosition = 0;
     public bool isHome;
 
     // Method to set the path for this player piece

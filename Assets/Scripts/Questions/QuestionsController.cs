@@ -26,10 +26,20 @@ public class QuestionsController : MonoBehaviour
     void Start()
     {
         questions.Add(new Questions("Test1", new string[] {"A", "B", "C", "D"}, "B", 2, 2));
-        questions.Add(new Questions("Test2", new string[] {"1", "2", "3", "4"}, "2", 2, 2));
+        questions.Add(new Questions("Test2", new string[] {"1", "B", "3", "4"}, "B", 2, 4));
         questions.Add(new Questions("Test3", new string[] {"K", "B", "C", "D"}, "B", 2, 2));
-        questions.Add(new Questions("Test4", new string[] {"f", "B", "C", "A"}, "A", 2, 2));
-        questions.Add(new Questions("Test5", new string[] {"R", "B", "M", "D"}, "M", 2, 2));
+        questions.Add(new Questions("Test4", new string[] {"f", "B", "C", "A"}, "B", 2, 4));
+        questions.Add(new Questions("Test5", new string[] {"R", "B", "M", "D"}, "B", 2, 2));
+        questions.Add(new Questions("Test6", new string[] {"A", "B", "C", "D"}, "B", 2, 4));
+        questions.Add(new Questions("Test7", new string[] {"1", "B", "3", "4"}, "B", 2, 2));
+        questions.Add(new Questions("Test8", new string[] {"K", "B", "C", "D"}, "B", 2, 4));
+        questions.Add(new Questions("Test9", new string[] {"f", "B", "C", "A"}, "B", 2, 2));
+        questions.Add(new Questions("Test10", new string[] {"R", "B", "M", "D"}, "B", 2, 4));
+        questions.Add(new Questions("Test11", new string[] {"A", "B", "C", "D"}, "B", 2, 2));
+        questions.Add(new Questions("Test12", new string[] {"1", "B", "3", "4"}, "B", 2, 4));
+        questions.Add(new Questions("Test13", new string[] {"K", "B", "C", "D"}, "B", 2, 2));
+        questions.Add(new Questions("Test14", new string[] {"f", "B", "C", "A"}, "B", 2, 4));
+        questions.Add(new Questions("Test15", new string[] {"R", "B", "M", "D"}, "B", 2, 2));
 
         answerButton1.onClick.AddListener(() => EvaluateAnswer(answerButton1));
         answerButton2.onClick.AddListener(() => EvaluateAnswer(answerButton2));
@@ -93,19 +103,22 @@ public class QuestionsController : MonoBehaviour
 
         if (isCorrect)
         {
-            // Move the player piece here while the board is displayed
-            gameMaster.playerPieces[gameMaster.currentPlayerIndex, gameMaster.currentPlayerIndex].MovePiece(currentQuestion.steps);
+            int currentPlayerIndex = gameMaster.currentPlayerIndex;
+            int currentPlayerPieceIndex = gameMaster.currentPlayerPieceIndex;
+            Vector3 targetFieldPosition = gameMaster.playerPieces[currentPlayerIndex, currentPlayerPieceIndex].path[gameMaster.playerPieces[currentPlayerIndex, currentPlayerPieceIndex].currentPosition + currentQuestion.steps].transform.position;
 
+            if (!gameMaster.IsPlayerOnField(targetFieldPosition))
+            {
+                gameMaster.playerPieces[currentPlayerIndex, currentPlayerPieceIndex].MovePiece(currentQuestion.steps);
+            }
+            else
+            {
+                Debug.Log("Cannot move, another player is on the target field.");
+            }
         }
         
-
-
         yield return new WaitForSeconds(5);
-
-    
-        
         // Waiting to see the board
-        
 
         // After UI updated en the turn
         gameMaster.EndTurn();

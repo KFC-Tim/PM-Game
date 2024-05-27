@@ -32,7 +32,7 @@ public class GameMaster : MonoBehaviour
     [SerializeField] private int piecesPerPlayer = 4; // required to have 4 pieces
 
     public int currentPlayerIndex = 0;
-    private int currentPlayerPieceIndex = 0;
+    public int currentPlayerPieceIndex = 0;
 
     private bool gameIsOver = false;
     private bool skipQuestion = false;
@@ -57,7 +57,18 @@ public class GameMaster : MonoBehaviour
         // Starts the game
         AtTurn();
     }
-
+    
+    public bool IsPlayerOnField(Vector3 fieldPosition)
+    {
+        foreach (var playerPiece in playerPieces)
+        {
+            if (playerPiece.transform.position == fieldPosition)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 
     // Called if a player is at the turn    
     public void AtTurn()
@@ -74,8 +85,6 @@ public class GameMaster : MonoBehaviour
         }
 
         // TODO move by qutetions steps
-        //playerPieces[currentPlayerIndex, currentPlayerIndex].MovePiece(2);
-
         //if question was right or skipped
         //move x fields with selected player
         Field playerField = new Field();
@@ -86,7 +95,7 @@ public class GameMaster : MonoBehaviour
 
         skipQuestion = false;
     }
-
+    
     // Called at the end of a turn
     public void EndTurn()
     {
