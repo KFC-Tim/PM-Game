@@ -11,7 +11,7 @@ public class GameMaster : MonoBehaviour
 {
     public InventoryManager inventoryManager;
     [SerializeField] private QuestionsController questionsController;
-    private FieldEventController fieldEventController;
+    public FieldEventController fieldEventController;
 
     [SerializeField] private GameObject[] playerPiecePrefabs = new GameObject[4];
     public PlayerPiece[,] playerPieces;
@@ -85,7 +85,13 @@ public class GameMaster : MonoBehaviour
         skipQuestion[currentPlayerIndex] = false;
 
         // TODO move by qutetions steps
-        playerPieces[currentPlayerIndex, currentPlayerIndex].MovePiece(2);
+        GameObject currPositionGameObj = playerPieces[currentPlayerIndex, currentPlayerIndex].GetGameObjectPosition();
+        Field currField = currPositionGameObj.GetComponent<Field>();
+
+        if (!currField.IsUnityNull() && currField.IsEventField)
+        {
+            GetFieldEvent(currentPlayerIndex);
+        }
     }
 
     // Called at the end of a turn
