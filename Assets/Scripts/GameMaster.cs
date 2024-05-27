@@ -58,14 +58,6 @@ public class GameMaster : MonoBehaviour
         AtTurn();
     }
 
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
-
     // Called if a player is at the turn    
     public void AtTurn()
     {
@@ -87,13 +79,12 @@ public class GameMaster : MonoBehaviour
         }
         if (!skipQuestion[currentPlayerIndex])
         {
-            StartCoroutine(ShowPlayerPiceSelection());    
+            StartCoroutine(ShowPlayerPiceSelection());
         }
+        skipQuestion[currentPlayerIndex] = false;
 
         // TODO move by qutetions steps
         playerPieces[currentPlayerIndex, currentPlayerIndex].MovePiece(2);
-
-        skipQuestion[currentPlayerIndex] = false;
     }
 
     // Called at the end of a turn
