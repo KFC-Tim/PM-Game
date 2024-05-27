@@ -64,7 +64,7 @@ public class QuestionsController : MonoBehaviour
             HighlightCorrectAnswer();
         }
 
-        StartCoroutine(WaitAndEndTurn());  
+        StartCoroutine(WaitAndEndTurn(isCorrect));  
     }
 
     private void HighlightCorrectAnswer()
@@ -81,17 +81,31 @@ public class QuestionsController : MonoBehaviour
         }
     }
 
-    private IEnumerator WaitAndEndTurn()
+    private IEnumerator WaitAndEndTurn(bool isCorrect)
     {
         // Waiting to see the result
         yield return new WaitForSeconds(2);
 
-        // Hide the canvas
-        HideCanvas();
-        ResetButtonColors();
 
-        // Waiting to see the board
+        // Hide the canvas
+        ResetButtonColors();
+        HideCanvas();
+
+        if (isCorrect)
+        {
+            // Move the player piece here while the board is displayed
+            gameMaster.playerPieces[gameMaster.currentPlayerIndex, gameMaster.currentPlayerIndex].MovePiece(currentQuestion.steps);
+
+        }
+        
+
+
         yield return new WaitForSeconds(5);
+
+    
+        
+        // Waiting to see the board
+        
 
         // After UI updated en the turn
         gameMaster.EndTurn();
