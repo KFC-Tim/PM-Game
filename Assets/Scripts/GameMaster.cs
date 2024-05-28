@@ -14,26 +14,15 @@ public class GameMaster : MonoBehaviour
     public FieldEventController fieldEventController;
 
     [SerializeField] private GameObject[] playerPiecePrefabs = new GameObject[4];
-    public PlayerPiece[,] playerPieces;
+    public PlayerPiece[] playerPieces;
+    public int[] playerRounds = new int[4];
 
-    [SerializeField] public Button pieceButton1;
-    [SerializeField] public Button pieceButton2;
-    [SerializeField] public Button pieceButton3;
-    [SerializeField] public Button pieceButton4;
 
     [SerializeField] private Board board;
 
-    [SerializeField] private GameObject selectionCanvas;
-    [SerializeField] private GameObject selectionImage;
-    [SerializeField] private GameObject selectionForeground;
-    [SerializeField] private GameObject selectionTitle;
-    [SerializeField] private GameObject selectionText;
-
     [SerializeField] private int totalPlayers = 4; // required to have 4 players
-    [SerializeField] private int piecesPerPlayer = 4; // required to have 4 pieces
 
     public int currentPlayerIndex = 0;
-    public int currentPlayerPieceIndex = 0;
 
     private bool gameIsOver = false;
     private bool[] skipQuestion = {false, false, false, false};
@@ -92,12 +81,12 @@ public class GameMaster : MonoBehaviour
         }
         if (!skipQuestion[currentPlayerIndex])
         {
-            StartCoroutine(ShowPlayerPiceSelection());
+            questionsController.AskQuestion();
         }
         skipQuestion[currentPlayerIndex] = false;
 
         // TODO move by qutetions steps
-        GameObject currPositionGameObj = playerPieces[currentPlayerIndex, currentPlayerIndex].GetGameObjectPosition();
+        GameObject currPositionGameObj = playerPieces[currentPlayerIndex].GetGameObjectPosition();
         Field currField = currPositionGameObj.GetComponent<Field>();
 
         if (!currField.IsUnityNull() && currField.IsEventField)
@@ -132,51 +121,18 @@ public class GameMaster : MonoBehaviour
 
     }
 
-    private Color parseHexColor(string hexColor){
+    /* Color parseHexColor(string hexColor){
         Color newColor;
         if(UnityEngine.ColorUtility.TryParseHtmlString(hexColor, out newColor)){
             return newColor;
         } else {
             return Color.red;
         }
-    }
+    }*/
 
-    public IEnumerator ShowPlayerPiceSelection(){
 
-        ChangeSelectionColor();
 
-        selectionCanvas.SetActive(true);
-        
-        hasSelected = false;
-
-        pieceButton1.onClick.AddListener(() => SelectPlayerPiece(0));
-        pieceButton2.onClick.AddListener(() => SelectPlayerPiece(1));
-        pieceButton3.onClick.AddListener(() => SelectPlayerPiece(2));
-        pieceButton4.onClick.AddListener(() => SelectPlayerPiece(3));
-
-        // Wait until player got selected
-        yield return new WaitUntil(() => hasSelected);
-
-        pieceButton1.onClick.RemoveAllListeners();
-        pieceButton2.onClick.RemoveAllListeners();
-        pieceButton3.onClick.RemoveAllListeners();
-        pieceButton4.onClick.RemoveAllListeners();
-
-        questionsController.AskQuestion();
-   
-    }
-
-    // Player can select one player piece to move forword with
-    private void SelectPlayerPiece(int pieceNumber)
-    {
-        currentPlayerPieceIndex = pieceNumber;
-        hasSelected = true;
-        Debug.Log("Player " + currentPlayerIndex + " got selected!");
-
-        selectionCanvas.SetActive(false);
-    }
-
-    private void ChangeSelectionColor(){
+    /* void ChangeSelectionColor(){
         switch(currentPlayerIndex){
             case 0:
                 selectionImage.GetComponent<Image>().color = parseHexColor("#B6343B");
@@ -203,21 +159,20 @@ public class GameMaster : MonoBehaviour
                 selectionTitle.GetComponent<Image>().color = parseHexColor("#455F41"); 
                 break;
         }
-    }
+    }*/
 
 
     // Initialize all the player pieces and give them a position
     private void InitializePlayerPieces()
     {
 
-        playerPieces = new PlayerPiece[totalPlayers, piecesPerPlayer];
+        playerPieces = new PlayerPiece[totalPlayers];
         Vector3 offset = new Vector3(0, 0.35f, 0); // Move 1 unit higher on the y-axis
 
         for (int team = 0; team < totalPlayers; team++)
         {
-            for (int pieceIndex = 0; pieceIndex < piecesPerPlayer; pieceIndex++)
-            {
-                Vector3 startPosition = GetStartPosition(team, pieceIndex) + offset;
+
+                Vector3 startPosition = GetStartPosition(team) + offset;
                 GameObject pieceInstance = Instantiate(playerPiecePrefabs[team], startPosition, Quaternion.identity);
 
                 // enabeling the mesh renderer
@@ -227,22 +182,22 @@ public class GameMaster : MonoBehaviour
                     meshRenderer.enabled = true;
                 }
 
-                playerPieces[team, pieceIndex] = pieceInstance.GetComponent<PlayerPiece>();
-                playerPieces[team, pieceIndex].SetPath(GetBoardPathForTeam(team));
-            }
+                playerPieces[team] = pieceInstance.GetComponent<PlayerPiece>();
+                playerPieces[team].SetPath(GetBoardPathForTeam(team));
+            
         }
     }
 
-    private Vector3 GetStartPosition(int team, int pieceIndex)
+    private Vector3 GetStartPosition(int team)
     {
         // Define start positions based on team and piece index
         // For example, return positions from predefined start positions for each team
         switch (team)
         {
-            case 0: return board.boardStartingRed[pieceIndex].transform.position;
-            case 1: return board.boardStartingBlue[pieceIndex].transform.position;
-            case 2: return board.boardStartingYellow[pieceIndex].transform.position;
-            case 3: return board.boardStartingGreen[pieceIndex].transform.position;
+            case 0: return board.boardPathRed[0].transform.position;
+            case 1: return board.boardPathBlue[0].transform.position;
+            case 2: return board.boardPathYellow[0].transform.position;
+            case 3: return board.boardPathGreen[0].transform.position;
             default: return Vector3.zero;
         }
     }

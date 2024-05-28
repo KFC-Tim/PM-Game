@@ -103,9 +103,10 @@ public class QuestionsController : MonoBehaviour
 
         if (isCorrect)
         {
-            int currentPlayerIndex = gameMaster.currentPlayerIndex;
-            int currentPlayerPieceIndex = gameMaster.currentPlayerPieceIndex;
-            Vector3 targetFieldPosition = gameMaster.playerPieces[currentPlayerIndex, currentPlayerPieceIndex].path[gameMaster.playerPieces[currentPlayerIndex, currentPlayerPieceIndex].currentPosition + currentQuestion.steps].transform.position;
+
+            Vector3 targetFieldPosition = gameMaster.playerPieces[currentPlayerIndex].path[gameMaster.playerPieces[currentPlayerIndex].currentPosition + currentQuestion.steps].transform.position;
+            // Move the player piece here while the board is displayed
+            gameMaster.playerPieces[gameMaster.currentPlayerIndex].MovePiece(currentQuestion.steps);
 
             if (!gameMaster.IsPlayerOnField(targetFieldPosition))
             {
@@ -116,8 +117,10 @@ public class QuestionsController : MonoBehaviour
                 Debug.Log("Cannot move, another player is on the target field.");
             }
         }
-        
+
         yield return new WaitForSeconds(5);
+
+        
         // Waiting to see the board
 
         // After UI updated en the turn

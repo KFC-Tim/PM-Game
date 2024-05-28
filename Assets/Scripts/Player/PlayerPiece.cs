@@ -6,7 +6,8 @@ public class PlayerPiece : MonoBehaviour
 {
 
     public GameObject[] path;
-    public int currentPosition = 0;
+    private int currentPosition = 0;
+    private int currentRounds = 0;
     public bool isHome;
 
     // Method to set the path for this player piece
@@ -27,7 +28,9 @@ public class PlayerPiece : MonoBehaviour
         }
         else
         {
-            Debug.Log("Cannot move, target position is out of bounds.");
+            currentRounds++;
+            transform.position = path[targetPosition%40].transform.position;
+            currentPosition = targetPosition%40;
         }
     }
 
