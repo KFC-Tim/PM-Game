@@ -25,7 +25,7 @@ public class GameMaster : MonoBehaviour
     public int currentPlayerIndex = 0;
 
     private bool gameIsOver = false;
-    private bool[] skipQuestion = {false, false, false, false};
+    private bool[] skipQuestion = { false, false, false, false };
     private bool hasSelected = false;
 
 
@@ -33,7 +33,8 @@ public class GameMaster : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        if(board == null){
+        if (board == null)
+        {
             Debug.Log("Board component not foun in the scene");
             return;
         }
@@ -47,13 +48,14 @@ public class GameMaster : MonoBehaviour
         // Starts the game
         AtTurn();
     }
-    
+
     public bool IsPlayerOnField(Vector3 fieldPosition)
     {
         foreach (var playerPiece in playerPieces)
         {
             if (playerPiece.transform.position == fieldPosition)
             {
+                playerPiece.transform.position = GetStartPosition(currentPlayerIndex);
                 return true;
             }
         }
@@ -71,8 +73,8 @@ public class GameMaster : MonoBehaviour
             DoFieldEvent(currentPlayerIndex, currEvent);
             inventoryManager.ClearCurrentEvent(currentPlayerIndex);
         }
-        
-        
+
+
         if (gameIsOver)
         {
             // TODO change scene
@@ -94,13 +96,13 @@ public class GameMaster : MonoBehaviour
             GetFieldEvent(currentPlayerIndex);
         }
     }
-    
+
     // Called at the end of a turn
     public void EndTurn()
     {
         if (CheckForWin())
         {
-            Debug.Log("Player " +  (currentPlayerIndex + 1)  +  " wins!");
+            Debug.Log("Player " + (currentPlayerIndex + 1) + " wins!");
             gameIsOver = true;
             // Return to WinningSequence;
             return;
@@ -112,12 +114,12 @@ public class GameMaster : MonoBehaviour
             AtTurn();
         }
         if (gameIsOver)
-        {      
+        {
             Debug.Log("Game is over. No more turns.");
             // Return to EndSequence
             return;
         }
-        
+
 
     }
 
@@ -172,19 +174,19 @@ public class GameMaster : MonoBehaviour
         for (int team = 0; team < totalPlayers; team++)
         {
 
-                Vector3 startPosition = GetStartPosition(team) + offset;
-                GameObject pieceInstance = Instantiate(playerPiecePrefabs[team], startPosition, Quaternion.identity);
+            Vector3 startPosition = GetStartPosition(team) + offset;
+            GameObject pieceInstance = Instantiate(playerPiecePrefabs[team], startPosition, Quaternion.identity);
 
-                // enabeling the mesh renderer
-                MeshRenderer meshRenderer = pieceInstance.GetComponent<MeshRenderer>();
-                if (meshRenderer != null)
-                {
-                    meshRenderer.enabled = true;
-                }
+            // enabeling the mesh renderer
+            MeshRenderer meshRenderer = pieceInstance.GetComponent<MeshRenderer>();
+            if (meshRenderer != null)
+            {
+                meshRenderer.enabled = true;
+            }
 
-                playerPieces[team] = pieceInstance.GetComponent<PlayerPiece>();
-                playerPieces[team].SetPath(GetBoardPathForTeam(team));
-            
+            playerPieces[team] = pieceInstance.GetComponent<PlayerPiece>();
+            playerPieces[team].SetPath(GetBoardPathForTeam(team));
+
         }
     }
 
@@ -231,14 +233,14 @@ public class GameMaster : MonoBehaviour
             return;
         }
 
-        if(fieldEvent.IsStorable())
+        if (fieldEvent.IsStorable())
         {
             //ask Player if he wants to put it in Inventory
             //if player wants to put it in inventory -> set Storable to false and return;
             inventoryManager.AddCard(playerNumber, fieldEvent);
             return;
         }
-        
+
         DoFieldEvent(playerNumber, fieldEvent);
     }
 

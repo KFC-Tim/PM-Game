@@ -6,14 +6,34 @@ public class PlayerPiece : MonoBehaviour
 {
 
     public GameObject[] path;
-    private int currentPosition = 0;
+    public int currentPosition = 0;
     private int currentRounds = 0;
-    public bool isHome;
+    private bool isHome;
 
     // Method to set the path for this player piece
     public void SetPath(GameObject[] newPath)
     {
         path = newPath;
+    }
+
+    // Method increases the currentRounds by one
+    public void SetCurrentRounds(){
+        currentRounds++;
+    }
+
+    // Method returns the current Rounds
+    public int GetCurrentRounds(){
+        return currentRounds;
+    }
+
+    // Method sets the current position
+    public void SetCurrentPosition(int currentPosition){
+        this.currentPosition = currentPosition;
+    }
+
+    // Method returns the current position
+    public int GetCurrentPosition(){
+        return currentPosition;
     }
 
     // Method to move the player piece along the path

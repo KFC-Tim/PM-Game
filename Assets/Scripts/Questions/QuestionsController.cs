@@ -25,21 +25,21 @@ public class QuestionsController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        questions.Add(new Questions("Test1", new string[] {"A", "B", "C", "D"}, "B", 2, 2));
-        questions.Add(new Questions("Test2", new string[] {"1", "B", "3", "4"}, "B", 2, 4));
-        questions.Add(new Questions("Test3", new string[] {"K", "B", "C", "D"}, "B", 2, 2));
-        questions.Add(new Questions("Test4", new string[] {"f", "B", "C", "A"}, "B", 2, 4));
-        questions.Add(new Questions("Test5", new string[] {"R", "B", "M", "D"}, "B", 2, 2));
-        questions.Add(new Questions("Test6", new string[] {"A", "B", "C", "D"}, "B", 2, 4));
-        questions.Add(new Questions("Test7", new string[] {"1", "B", "3", "4"}, "B", 2, 2));
-        questions.Add(new Questions("Test8", new string[] {"K", "B", "C", "D"}, "B", 2, 4));
-        questions.Add(new Questions("Test9", new string[] {"f", "B", "C", "A"}, "B", 2, 2));
-        questions.Add(new Questions("Test10", new string[] {"R", "B", "M", "D"}, "B", 2, 4));
-        questions.Add(new Questions("Test11", new string[] {"A", "B", "C", "D"}, "B", 2, 2));
-        questions.Add(new Questions("Test12", new string[] {"1", "B", "3", "4"}, "B", 2, 4));
-        questions.Add(new Questions("Test13", new string[] {"K", "B", "C", "D"}, "B", 2, 2));
-        questions.Add(new Questions("Test14", new string[] {"f", "B", "C", "A"}, "B", 2, 4));
-        questions.Add(new Questions("Test15", new string[] {"R", "B", "M", "D"}, "B", 2, 2));
+        questions.Add(new Questions("Test1", new string[] { "A", "B", "C", "D" }, "B", 2, 2));
+        questions.Add(new Questions("Test2", new string[] { "1", "B", "3", "4" }, "B", 2, 4));
+        questions.Add(new Questions("Test3", new string[] { "K", "B", "C", "D" }, "B", 2, 2));
+        questions.Add(new Questions("Test4", new string[] { "f", "B", "C", "A" }, "B", 2, 4));
+        questions.Add(new Questions("Test5", new string[] { "R", "B", "M", "D" }, "B", 2, 2));
+        questions.Add(new Questions("Test6", new string[] { "A", "B", "C", "D" }, "B", 2, 4));
+        questions.Add(new Questions("Test7", new string[] { "1", "B", "3", "4" }, "B", 2, 2));
+        questions.Add(new Questions("Test8", new string[] { "K", "B", "C", "D" }, "B", 2, 4));
+        questions.Add(new Questions("Test9", new string[] { "f", "B", "C", "A" }, "B", 2, 2));
+        questions.Add(new Questions("Test10", new string[] { "R", "B", "M", "D" }, "B", 2, 4));
+        questions.Add(new Questions("Test11", new string[] { "A", "B", "C", "D" }, "B", 2, 2));
+        questions.Add(new Questions("Test12", new string[] { "1", "B", "3", "4" }, "B", 2, 4));
+        questions.Add(new Questions("Test13", new string[] { "K", "B", "C", "D" }, "B", 2, 2));
+        questions.Add(new Questions("Test14", new string[] { "f", "B", "C", "A" }, "B", 2, 4));
+        questions.Add(new Questions("Test15", new string[] { "R", "B", "M", "D" }, "B", 2, 2));
 
         answerButton1.onClick.AddListener(() => EvaluateAnswer(answerButton1));
         answerButton2.onClick.AddListener(() => EvaluateAnswer(answerButton2));
@@ -50,14 +50,14 @@ public class QuestionsController : MonoBehaviour
     public void AskQuestion()
     {
         currentQuestion = questions[Random.Range(0, questions.Count)];
-        questionText.text = currentQuestion.questionText; 
+        questionText.text = currentQuestion.questionText;
         UpdateAnswerButtons(currentQuestion.questionAnsers);
         ShowCanvas();
 
     }
 
     public void EvaluateAnswer(Button clickedButton)
-     {
+    {
         string playerAnswer = clickedButton.GetComponentInChildren<TMP_Text>().text;
         bool isCorrect = playerAnswer.ToLower() == currentQuestion.correctAnswer.ToLower();
 
@@ -74,19 +74,19 @@ public class QuestionsController : MonoBehaviour
             HighlightCorrectAnswer();
         }
 
-        StartCoroutine(WaitAndEndTurn(isCorrect));  
+        StartCoroutine(WaitAndEndTurn(isCorrect));
     }
 
     private void HighlightCorrectAnswer()
     {
-        Button[] answerButtons = {answerButton1, answerButton2, answerButton3, answerButton4};
+        Button[] answerButtons = { answerButton1, answerButton2, answerButton3, answerButton4 };
         foreach (Button answerButton in answerButtons)
         {
             TMP_Text buttonText = answerButton.GetComponentInChildren<TMP_Text>();
             if (buttonText.text.ToLower() == currentQuestion.correctAnswer.ToLower())
             {
                 answerButton.GetComponent<Image>().color = Color.green;
-                break; 
+                break;
             }
         }
     }
@@ -103,24 +103,24 @@ public class QuestionsController : MonoBehaviour
 
         if (isCorrect)
         {
-
+            int currentPlayerIndex = gameMaster.currentPlayerIndex;
             Vector3 targetFieldPosition = gameMaster.playerPieces[currentPlayerIndex].path[gameMaster.playerPieces[currentPlayerIndex].currentPosition + currentQuestion.steps].transform.position;
             // Move the player piece here while the board is displayed
-            gameMaster.playerPieces[gameMaster.currentPlayerIndex].MovePiece(currentQuestion.steps);
+            //.playerPieces[gameMaster.currentPlayerIndex].MovePiece(currentQuestion.steps);
 
-            if (!gameMaster.IsPlayerOnField(targetFieldPosition))
+            if (gameMaster.IsPlayerOnField(targetFieldPosition))
             {
-                gameMaster.playerPieces[currentPlayerIndex, currentPlayerPieceIndex].MovePiece(currentQuestion.steps);
+                gameMaster.playerPieces[currentPlayerIndex].MovePiece(currentQuestion.steps);
             }
             else
             {
-                Debug.Log("Cannot move, another player is on the target field.");
+                gameMaster.playerPieces[currentPlayerIndex].MovePiece(currentQuestion.steps);
             }
         }
 
         yield return new WaitForSeconds(5);
 
-        
+
         // Waiting to see the board
 
         // After UI updated en the turn
@@ -129,7 +129,7 @@ public class QuestionsController : MonoBehaviour
 
     private void UpdateAnswerButtons(string[] answers)
     {
-         if (answers != null && answers.Length >= 4)
+        if (answers != null && answers.Length >= 4)
         {
             answerButtonText1.text = answers[0];
             answerButtonText2.text = answers[1];
@@ -155,13 +155,15 @@ public class QuestionsController : MonoBehaviour
         questions.Remove(question);
     }
 
-    private void ShowCanvas(){
+    private void ShowCanvas()
+    {
         questionCanvas.SetActive(true);
     }
 
-    private void HideCanvas(){
+    private void HideCanvas()
+    {
         questionCanvas.SetActive(false);
     }
 
-   
+
 }
