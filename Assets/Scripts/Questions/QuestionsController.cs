@@ -94,15 +94,12 @@ public class QuestionsController : MonoBehaviour
         if (isCorrect)
         {
             // Move the player piece here while the board is displayed
-            gameMaster.playerPieces[gameMaster.currentPlayerIndex, gameMaster.currentPlayerIndex].MovePiece(currentQuestion.steps);
+            gameMaster.playerPieces[gameMaster.currentPlayerIndex].MovePiece(currentQuestion.steps);
 
         }
-        
-
 
         yield return new WaitForSeconds(5);
 
-    
         
         // Waiting to see the board
         

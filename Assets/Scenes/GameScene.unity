@@ -2653,7 +2653,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4540392423778504, guid: cdd426b3d7547a04cbca8ff4412b2613, type: 3}
   m_PrefabInstance: {fileID: 1239460679}
   m_PrefabAsset: {fileID: 0}
---- !u!1001 &597302724
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -3401,7 +3400,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1056577265708996, guid: 8564b620cad6a7d46a3a2588c5526e90, type: 3}
       propertyPath: m_Name
-      value: blau_feld_3_normal
+      value: blau_feld_2_normal
       objectReference: {fileID: 0}
     - target: {fileID: 4794767148709886, guid: 8564b620cad6a7d46a3a2588c5526e90, type: 3}
       propertyPath: m_LocalScale.x
@@ -3747,8 +3746,8 @@ Transform:
   m_Children:
   - {fileID: 2129252407}
   - {fileID: 106361064}
-  - {fileID: 1508570521}
   - {fileID: 711829805}
+  - {fileID: 1508570521}
   - {fileID: 302973734}
   - {fileID: 726570416}
   - {fileID: 597302725}
@@ -7431,7 +7430,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1056577265708996, guid: 8564b620cad6a7d46a3a2588c5526e90, type: 3}
       propertyPath: m_Name
-      value: blau_feld_2_normal
+      value: blau_feld_3_normal
       objectReference: {fileID: 0}
     - target: {fileID: 4794767148709886, guid: 8564b620cad6a7d46a3a2588c5526e90, type: 3}
       propertyPath: m_LocalScale.x
@@ -8417,8 +8416,8 @@ MonoBehaviour:
   boardPathBlue:
   - {fileID: 2129252408}
   - {fileID: 106361065}
-  - {fileID: 1508570522}
   - {fileID: 711829806}
+  - {fileID: 1508570522}
   - {fileID: 302973735}
   - {fileID: 726570417}
   - {fileID: 597302726}
@@ -9677,18 +9676,9 @@ MonoBehaviour:
   - {fileID: 1073280561}
   - {fileID: 631163876}
   - {fileID: 2127246788}
-  pieceButton1: {fileID: 994218197}
-  pieceButton2: {fileID: 396993951}
-  pieceButton3: {fileID: 912866078}
-  pieceButton4: {fileID: 973102492}
+  playerPieces: []
   board: {fileID: 1730829172}
-  selectionCanvas: {fileID: 1552657839}
-  selectionImage: {fileID: 760271363}
-  selectionForeground: {fileID: 1002416018}
-  selectionTitle: {fileID: 90338173}
-  selectionText: {fileID: 145946632}
   totalPlayers: 4
-  piecesPerPlayer: 4
   currentPlayerIndex: 0
 --- !u!4 &1943950538
 Transform:
