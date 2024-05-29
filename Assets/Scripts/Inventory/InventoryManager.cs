@@ -17,6 +17,7 @@ public class InventoryManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        HideInventory();
         eventsInventory[0] = new List<FieldEvent>();
         eventsInventory[1] = new List<FieldEvent>();
         eventsInventory[2] = new List<FieldEvent>();
@@ -26,6 +27,16 @@ public class InventoryManager : MonoBehaviour
         FieldEvent e2 = new FieldEvent("SkipQuestion", true);
         AddCard(0, e);
         AddCard(0, e2);
+    }
+
+    public void HideInventory()
+    {
+        panel.SetActive(false);
+    }
+    
+    public void ShowInventory()
+    {
+        panel.SetActive(true);
     }
 
     public void AddCard(int playerNumber, FieldEvent eventC) {
