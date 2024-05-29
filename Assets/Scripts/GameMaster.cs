@@ -44,10 +44,18 @@ public class GameMaster : MonoBehaviour
         currentPlayerIndex = 0;
         gameIsOver = false;
 
+        
+    }
+
+    public void StartGame(int totalPlayers)
+    {
+        this.totalPlayers = totalPlayers;
+        inventoryManager.ShowInventory();
+        
         // Starts the game
         AtTurn();
     }
-
+    
     // Called if a player is at the turn    
     public void AtTurn()
     {
