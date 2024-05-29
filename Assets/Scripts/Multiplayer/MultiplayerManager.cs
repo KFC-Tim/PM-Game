@@ -62,12 +62,12 @@ public class MultiplayerManager : MonoBehaviour
     }
 
     // Method to create a game
-    public void CreateGame()
+    public void CreateGame(string newPlayerName)
     {
         var createMessage = new
         {
             type = "create",
-            playerName = playerName
+            playerName = newPlayerName
         };
         SendMessage(JsonUtility.ToJson(createMessage));
     }
