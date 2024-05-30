@@ -155,6 +155,13 @@ public class MultiplayerManager : MonoBehaviour
     private void DisplayQuestion(QuestionData questionData)
     {
         throw new NotImplementedException();
+        //richtige Antwort auswählen und dann die ausgewählte Antwort als String senden
+        /*var answerMessage = new
+        {
+            answer = "Die Antwort hier hin"
+        };
+        SendMessage(JsonUtility.ToJson(answerMessage));
+        */
     }
 
     new
