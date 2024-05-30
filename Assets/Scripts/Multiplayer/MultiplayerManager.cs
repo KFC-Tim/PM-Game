@@ -210,7 +210,7 @@ public class MultiplayerManager : MonoBehaviour
         public int currentTurn;
 
         // Dictionary mapping player UUIDs to their scores
-        public Dictionary<string, int> scores;
+        public Dictionary<string, int> scores; // Aktuell hat jeder Spieler nur eine Spielfigur wird noch geändert!!!
     }
 
     [System.Serializable]
@@ -218,5 +218,6 @@ public class MultiplayerManager : MonoBehaviour
     {
         public string uuid;
         public string name;
+        public int playerPosition; // ob erster zweiter, dritter oder vierter spieler -> wichtig für den GameMaster
     }
 }
