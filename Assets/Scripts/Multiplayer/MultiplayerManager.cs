@@ -9,13 +9,12 @@ public class MultiplayerManager : MonoBehaviour
 {
     private NetworkDriver driver;
     private NetworkConnection connection;
-    public string playerName;
-    public int playerIndex;
-    public GameState gameState;
-    public string gameId;
+
+    private ClientGameState gameState;
 
     void Start()
     {
+        gameState = new ClientGameState();
         driver = NetworkDriver.Create();
         connection = default(NetworkConnection);
         var endpoint = NetworkEndpoint.Parse("87.106.165.86", 8080);
@@ -73,14 +72,13 @@ public class MultiplayerManager : MonoBehaviour
     }
 
     // Method to join an existing game
-    public void JoinGame(string gameId)
+    public void JoinGame(string newGameId, string newPlayerName)
     {
-        this.gameId = gameId;
         var joinMessage = new
         {
             type = "join",
-            playerName = playerName,
-            gameId = gameId
+            playerName = newPlayerName,
+            gameId = newGameId
         };
         SendMessage(JsonUtility.ToJson(joinMessage));
     }
@@ -92,16 +90,13 @@ public class MultiplayerManager : MonoBehaviour
         switch (data.type)
         {
             case "gameCreated":
-                gameId = data.gameId;
-                Debug.Log("Game created with ID: " + gameId);
+                Debug.Log("Game created!");
                 break;
             case "joined":
-                gameId = data.gameId;
-                Debug.Log("Joined game with ID: " + gameId);
+                HandleJoinGame(data);
                 break;
             case "update":
-                gameState = data.state;
-                UpdateUI();
+                UpdateGameState(data);
                 break;
             case "question":
                 DisplayQuestion(data.questionData);
@@ -115,6 +110,41 @@ public class MultiplayerManager : MonoBehaviour
         }
     }
 
+    private void UpdateGameState(ServerMessage data)
+    {
+        if (data == null)
+        {
+            Debug.LogError("ServerMessage data is null");
+            return;
+        }
+
+        gameState.GameState = data.state;
+    }
+
+    private void HandleJoinGame(ServerMessage data)
+    {
+        if (data == null)
+        {
+            Debug.LogError("ServerMessage data is null");
+            return;
+        }
+
+        gameState.GameId = data.gameId;
+        gameState.GameState = data.state;
+
+        Debug.Log("Joined Game: " + gameState.GameId);
+        foreach (var player in data.state.players)
+        {
+            Debug.Log("Player UUID: " + player.uuid + ", Name: " + player.name);
+        }
+
+        foreach (var score in data.state.scores)
+        {
+            Debug.Log("Player UUID: " + score.Key + ", Score: " + score.Value);
+        }
+
+        Debug.Log("Current Turn: " + data.state.currentTurn);
+    }
 
     public class QuestionData
     {
@@ -151,11 +181,6 @@ public class MultiplayerManager : MonoBehaviour
         }
     }
 
-    void UpdateUI()
-    {
-        // Update your UI based on the new game state
-    }
-
     void OnDestroy()
     {
         driver.Dispose();
@@ -174,7 +199,7 @@ public class MultiplayerManager : MonoBehaviour
     [System.Serializable]
     public class GameState
     {
-        public List<PlayerInfo> players;
+        public List<Player> players;
         public int currentTurn;
 
         // Dictionary mapping player UUIDs to their scores
@@ -182,7 +207,7 @@ public class MultiplayerManager : MonoBehaviour
     }
 
     [System.Serializable]
-    public class PlayerInfo
+    public class Player
     {
         public string uuid;
         public string name;
