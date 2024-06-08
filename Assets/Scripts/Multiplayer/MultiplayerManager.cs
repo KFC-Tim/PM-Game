@@ -4,6 +4,9 @@ using Unity.Collections;
 using System.Text;
 using System.Collections.Generic;
 using System;
+using UnityEngine.SceneManagement;
+
+
 
 public class MultiplayerManager : MonoBehaviour
 {
@@ -19,6 +22,11 @@ public class MultiplayerManager : MonoBehaviour
         connection = default(NetworkConnection);
         var endpoint = NetworkEndpoint.Parse("87.106.165.86", 8080);
         connection = driver.Connect(endpoint);
+    }
+
+    public void SwitchToMenuScene()
+    {
+        SceneManager.LoadScene("MenuScene");
     }
 
     void Update()
@@ -56,6 +64,7 @@ public class MultiplayerManager : MonoBehaviour
             {
                 Debug.Log("Client got disconnected from server");
                 connection = default(NetworkConnection);
+                SwitchToMenuScene(); 
             }
         }
     }
@@ -83,6 +92,12 @@ public class MultiplayerManager : MonoBehaviour
         SendMessage(JsonUtility.ToJson(joinMessage));
     }
 
+    public void SwitchToGameScene()
+    {
+        SceneManager.LoadScene("GameScene");
+    }
+
+
     // Handle received messages
     void OnMessageReceived(string message)
     {
@@ -91,9 +106,11 @@ public class MultiplayerManager : MonoBehaviour
         {
             case "gameCreated":
                 Debug.Log("Game created!");
+                SwitchToGameScene();
                 break;
             case "joined":
                 HandleJoinGame(data);
+                SwitchToGameScene();
                 break;
             case "update":
                 UpdateGameState(data);
@@ -155,7 +172,7 @@ public class MultiplayerManager : MonoBehaviour
     private void DisplayQuestion(QuestionData questionData)
     {
         throw new NotImplementedException();
-        //richtige Antwort auswählen und dann die ausgewählte Antwort als String senden
+        //richtige Antwort auswï¿½hlen und dann die ausgewï¿½hlte Antwort als String senden
         /*var answerMessage = new
         {
             answer = "Die Antwort hier hin"
@@ -210,7 +227,7 @@ public class MultiplayerManager : MonoBehaviour
         public int currentTurn;
 
         // Dictionary mapping player UUIDs to their scores
-        public Dictionary<string, int> scores; // Aktuell hat jeder Spieler nur eine Spielfigur wird noch geändert!!!
+        public Dictionary<string, int> scores; // Aktuell hat jeder Spieler nur eine Spielfigur wird noch geï¿½ndert!!!
     }
 
     [System.Serializable]
@@ -218,6 +235,6 @@ public class MultiplayerManager : MonoBehaviour
     {
         public string uuid;
         public string name;
-        public int playerPosition; // ob erster zweiter, dritter oder vierter spieler -> wichtig für den GameMaster
+        public int playerPosition; // ob erster zweiter, dritter oder vierter spieler -> wichtig fï¿½r den GameMaster
     }
 }
