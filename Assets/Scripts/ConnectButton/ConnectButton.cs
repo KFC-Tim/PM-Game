@@ -11,6 +11,7 @@ public class ConnectButton : MonoBehaviour
     public Image Error;
     public TMP_InputField nameInput;
     public TMP_InputField sessionInput;
+    public MultiplayerManager multiplayerManager; 
 
     void Start()
     {
@@ -34,6 +35,7 @@ public class ConnectButton : MonoBehaviour
         if (!nameMissing && !sessionMissing)
         {
             Debug.Log("Name: " + nameInput.text + ", Session: " + sessionInput.text);
+            multiplayerManager.JoinGame(sessionInput.text, nameInput.text);
         }
         else
         {

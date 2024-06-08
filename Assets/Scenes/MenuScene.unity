@@ -396,6 +396,7 @@ MonoBehaviour:
   Error: {fileID: 583189357}
   nameInput: {fileID: 1006389598}
   sessionInput: {fileID: 1603620055}
+  multiplayerManager: {fileID: 0}
 --- !u!1 &170122366
 GameObject:
   m_ObjectHideFlags: 0
