@@ -1,9 +1,12 @@
 using UnityEngine;
-using UnityEngine.UI; // Wichtig für die UI-Komponenten
+using UnityEngine.UI; 
+using TMPro;
 
 public class CreateButton : MonoBehaviour
 {
     public Button myButton;
+    public TMP_InputField nameInput;
+    public MultiplayerManager multiplayerManager;
 
     void Start()
     {
@@ -17,5 +20,13 @@ public class CreateButton : MonoBehaviour
     private void OnButtonClick()
     {
         Debug.Log("Create Session");
+        if (!string.IsNullOrEmpty(nameInput.text))
+        {
+            multiplayerManager.CreateGame(nameInput.text); 
+        }
+        else
+        {
+            Debug.LogWarning("Player name is missing");
+        }
     }
 }

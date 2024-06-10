@@ -1,99 +1,138 @@
 using UnityEngine;
-using Unity.Networking.Transport;
-using Unity.Collections;
+using NativeWebSocket;
 using System.Text;
 using System.Collections.Generic;
 using System;
+using UnityEngine.SceneManagement;
+using static MultiplayerManager;
 
 public class MultiplayerManager : MonoBehaviour
 {
-    private NetworkDriver driver;
-    private NetworkConnection connection;
-
+    private WebSocket websocket;
     private ClientGameState gameState;
 
     void Start()
     {
         gameState = new ClientGameState();
-        driver = NetworkDriver.Create();
-        connection = default(NetworkConnection);
-        var endpoint = NetworkEndpoint.Parse("87.106.165.86", 8080);
-        connection = driver.Connect(endpoint);
+        ConnectToServer();
+    }
+
+    async void ConnectToServer()
+    {
+        websocket = new WebSocket("ws://87.106.165.86:8080");
+
+        websocket.OnOpen += () =>
+        {
+            Debug.Log("Connected to the Server!");
+        };
+
+        websocket.OnError += (e) =>
+        {
+            Debug.LogError("Error: " + e);
+        };
+
+        websocket.OnClose += (e) =>
+        {
+            Debug.Log("Disconnected from the Server");
+            SwitchToMenuScene();
+        };
+
+        websocket.OnMessage += (bytes) =>
+        {
+            var message = Encoding.UTF8.GetString(bytes);
+            OnMessageReceived(message);
+        };
+
+        await websocket.Connect();
     }
 
     void Update()
     {
-        driver.ScheduleUpdate().Complete();
-
-        if (!connection.IsCreated)
-        {
-            return;
-        }
-
-        DataStreamReader stream;
-        NetworkEvent.Type cmd;
-
-        while ((cmd = connection.PopEvent(driver, out stream)) != NetworkEvent.Type.Empty)
-        {
-            if (cmd == NetworkEvent.Type.Connect)
-            {
-                Debug.Log("We are now connected to the server");
-            }
-            else if (cmd == NetworkEvent.Type.Data)
-            {
-                // Read incoming data length and bytes
-                int length = stream.Length;
-                var buffer = new NativeArray<byte>(length, Allocator.Temp);
-                stream.ReadBytes(buffer);
-
-
-                // Convert byte array to string and
-
-                var message = Encoding.UTF8.GetString(buffer.ToArray());
-                OnMessageReceived(message);
-            }
-            else if (cmd == NetworkEvent.Type.Disconnect)
-            {
-                Debug.Log("Client got disconnected from server");
-                connection = default(NetworkConnection);
-            }
-        }
+#if !UNITY_WEBGL || UNITY_EDITOR
+        websocket.DispatchMessageQueue();
+#endif
     }
 
-    // Method to create a game
+    public void SwitchToMenuScene()
+    {
+        SceneManager.LoadScene("MenuScene");
+    }
+
+    public class CreateMessage
+    {
+        public string type;
+        public string playerName;
+    }
+
     public void CreateGame(string newPlayerName)
     {
-        var createMessage = new
+        var createMessage = new CreateMessage
         {
             type = "create",
             playerName = newPlayerName
         };
-        SendMessage(JsonUtility.ToJson(createMessage));
+        SendMessageToServer(JsonUtility.ToJson(createMessage));
     }
 
-    // Method to join an existing game
+    public class JoinMessage
+    {
+        public string type;
+        public string playerName;
+        public string gameId;
+    }
     public void JoinGame(string newGameId, string newPlayerName)
     {
-        var joinMessage = new
+        var joinMessage = new JoinMessage
         {
             type = "join",
             playerName = newPlayerName,
             gameId = newGameId
         };
-        SendMessage(JsonUtility.ToJson(joinMessage));
+        SendMessageToServer(JsonUtility.ToJson(joinMessage));
     }
 
-    // Handle received messages
+    public void SwitchToGameScene()
+    {
+        SceneManager.LoadScene("GameScene");
+    }
+
+    async void SendMessageToServer(string message)
+    {
+        if (websocket.State == WebSocketState.Open)
+        {
+            Debug.Log(message);
+            var bytes = Encoding.UTF8.GetBytes(message);
+            await websocket.Send(bytes);
+        }
+        else
+        {
+            Debug.LogError("Failed to send message. WebSocket is not open.");
+        }
+    }
+
     void OnMessageReceived(string message)
     {
+        Debug.Log("Received message: " + message); // Log the received message for debugging
         var data = JsonUtility.FromJson<ServerMessage>(message);
+        // Additional logging to inspect the deserialized data
+        Debug.Log("Deserialized ServerMessage: " + JsonUtility.ToJson(data));
+
+        if (data == null || string.IsNullOrEmpty(data.type))
+        {
+            Debug.LogWarning("Received message with undefined or null type.");
+            return;
+        }
+
+        // Handle the message based on its type
         switch (data.type)
         {
             case "gameCreated":
                 Debug.Log("Game created!");
+                SwitchToGameScene();
                 break;
             case "joined":
                 HandleJoinGame(data);
+                SwitchToGameScene();
                 break;
             case "update":
                 UpdateGameState(data);
@@ -109,6 +148,7 @@ public class MultiplayerManager : MonoBehaviour
                 break;
         }
     }
+
 
     private void UpdateGameState(ServerMessage data)
     {
@@ -129,12 +169,35 @@ public class MultiplayerManager : MonoBehaviour
             return;
         }
 
+        if (data.state == null)
+        {
+            Debug.LogError("GameState in ServerMessage is null");
+            return;
+        }
+
+        // Initialize the players list if it is null
+        if (data.state.players == null)
+        {
+            data.state.players = new List<Player>();
+        }
+
+        // Initialize the scores dictionary if it is null
+        if (data.state.scores == null)
+        {
+            data.state.scores = new Dictionary<string, int>();
+        }
+
         gameState.GameId = data.gameId;
         gameState.GameState = data.state;
 
         Debug.Log("Joined Game: " + gameState.GameId);
         foreach (var player in data.state.players)
         {
+            if (player == null)
+            {
+                Debug.LogError("Player is null in players list");
+                continue;
+            }
             Debug.Log("Player UUID: " + player.uuid + ", Name: " + player.name);
         }
 
@@ -146,51 +209,33 @@ public class MultiplayerManager : MonoBehaviour
         Debug.Log("Current Turn: " + data.state.currentTurn);
     }
 
-    public class QuestionData
+
+    private class AnswerMessage
     {
-        public string question;
-        public string[] answers;
+        public string type;
+        public string answer;
     }
 
     private void DisplayQuestion(QuestionData questionData)
     {
-        throw new NotImplementedException();
-        //richtige Antwort auswählen und dann die ausgewählte Antwort als String senden
-        /*var answerMessage = new
+        Debug.Log("Question: " + questionData.question);
+        for (int i = 0; i < questionData.answers.Length; i++)
         {
-            answer = "Die Antwort hier hin"
+            Debug.Log("Answer " + i + ": " + questionData.answers[i]);
+        }
+
+
+        var answerMessage = new AnswerMessage
+        {
+            type = "answer",
+            answer = questionData.answers[0] // Choose the first answer
         };
-        SendMessage(JsonUtility.ToJson(answerMessage));
-        */
+        SendMessageToServer(JsonUtility.ToJson(answerMessage));
     }
 
-    new
-        void SendMessage(string message)
+    private async void OnApplicationQuit()
     {
-        DataStreamWriter writer;
-        if (driver.BeginSend(connection, out writer) == 0)
-        {
-            var bytes = Encoding.UTF8.GetBytes(message);
-            writer.WriteInt(bytes.Length);
-            using (var nativeArray = new NativeArray<byte>(bytes, Allocator.Temp))
-            {
-                writer.WriteBytes(nativeArray);
-            }
-            var status = driver.EndSend(writer);
-            if (status < 0)
-            {
-                Debug.LogError("Failed to send message: " + status);
-            }
-        }
-        else
-        {
-            Debug.LogError("Failed to begin send.");
-        }
-    }
-
-    void OnDestroy()
-    {
-        driver.Dispose();
+        await websocket.Close();
     }
 
     [System.Serializable]
@@ -208,9 +253,7 @@ public class MultiplayerManager : MonoBehaviour
     {
         public List<Player> players;
         public int currentTurn;
-
-        // Dictionary mapping player UUIDs to their scores
-        public Dictionary<string, int> scores; // Aktuell hat jeder Spieler nur eine Spielfigur wird noch geändert!!!
+        public Dictionary<string, int> scores;
     }
 
     [System.Serializable]
@@ -218,6 +261,13 @@ public class MultiplayerManager : MonoBehaviour
     {
         public string uuid;
         public string name;
-        public int playerPosition; // ob erster zweiter, dritter oder vierter spieler -> wichtig für den GameMaster
+        public int playerPosition;
+    }
+
+    [System.Serializable]
+    public class QuestionData
+    {
+        public string question;
+        public string[] answers;
     }
 }
