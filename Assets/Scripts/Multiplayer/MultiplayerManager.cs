@@ -106,13 +106,25 @@ public class MultiplayerManager : MonoBehaviour
 
     private IEnumerator LoadGameScene()
     {
+        Debug.Log("Scene-Loading Started");
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync("GameScene");
+        asyncLoad.allowSceneActivation = false;
 
-        while (!asyncLoad.isDone)
+        while (!asyncLoad.isDone && asyncLoad.progress<0.9f)
         {
+            if (asyncLoad.isDone && asyncLoad.progress == 0)
+            {
+                Debug.LogError("Error: Scene loading stuck at 0 progress.");
+                break;
+            }
+            
+            Debug.Log("Loading progress: " + asyncLoad.progress); 
             yield return null;
         }
-
+        
+        asyncLoad.allowSceneActivation = true;
+        Debug.Log("Scene-Loading Ended");
+        
         OnGameSceneLoaded();
     }
 
