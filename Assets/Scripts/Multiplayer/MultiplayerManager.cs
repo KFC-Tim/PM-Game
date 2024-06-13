@@ -113,13 +113,11 @@ public class MultiplayerManager : MonoBehaviour
             yield return null;
         }
 
-        // Szene ist vollständig geladen
         OnGameSceneLoaded();
     }
 
     private void OnGameSceneLoaded()
     {
-        // Hier können Sie alle Aktionen ausführen, die nach dem Laden der Szene erforderlich sind
         Debug.Log("GameScene is loaded completely.");
         SetGameMaster();
         _isReady = true;
