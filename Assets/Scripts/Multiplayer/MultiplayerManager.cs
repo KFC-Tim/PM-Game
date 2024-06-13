@@ -4,6 +4,7 @@ using System.Text;
 using System.Collections.Generic;
 using System;
 using System.Collections;
+using System.Runtime.CompilerServices;
 using UnityEngine.SceneManagement;
 using static MultiplayerManager;
 
@@ -129,6 +130,8 @@ public class MultiplayerManager : MonoBehaviour
     {
         LoadQuestionDataQueue();
         LoadQuestionDataQueue();
+        
+        Debug.Log("Queues were loaded!");
     }
     
     private void LoadGameDataQueue()
@@ -310,6 +313,7 @@ public class MultiplayerManager : MonoBehaviour
         if (!_isReady)
         {
             _questionDataQueue.Add(questionData);
+            Debug.Log("Question queued");
             return;
         }
         _gameMasterScript.AnswerQuestion(questionData);
