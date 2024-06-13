@@ -38,4 +38,10 @@ public class PlayerPiece : MonoBehaviour
     {
         return path[currentPosition];
     }
+
+    public void SetPosition(int position)
+    {
+        currentPosition = position%40;  
+        transform.position = path[currentPosition].transform.position;
+    }
 }

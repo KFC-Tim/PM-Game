@@ -3,6 +3,7 @@ using NativeWebSocket;
 using System.Text;
 using System.Collections.Generic;
 using System;
+using System.Collections;
 using UnityEngine.SceneManagement;
 using static MultiplayerManager;
 
@@ -10,6 +11,9 @@ public class MultiplayerManager : MonoBehaviour
 {
     private WebSocket websocket;
     private ClientGameState gameState;
+    private GameMaster _gameMasterScript;
+    private List<GameState> _queue;
+    private bool _isReady = true;
 
     void Start()
     {
@@ -93,7 +97,38 @@ public class MultiplayerManager : MonoBehaviour
 
     public void SwitchToGameScene()
     {
-        SceneManager.LoadScene("GameScene");
+        _isReady = false;
+        StartCoroutine(LoadGameScene());
+    }
+
+    private IEnumerator LoadGameScene()
+    {
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync("GameScene");
+
+        while (!asyncLoad.isDone)
+        {
+            yield return null;
+        }
+
+        // Szene ist vollständig geladen
+        OnGameSceneLoaded();
+    }
+
+    private void OnGameSceneLoaded()
+    {
+        // Hier können Sie alle Aktionen ausführen, die nach dem Laden der Szene erforderlich sind
+        Debug.Log("GameScene is loaded completely.");
+        SetGameMaster();
+        _isReady = true;
+        LoadQueue();
+    }
+
+    private void LoadQueue()
+    {
+        foreach (var gameState in _queue)
+        {
+            _gameMasterScript.UpdateGameState(gameState);
+        }
     }
 
     async void SendMessageToServer(string message)
@@ -149,6 +184,22 @@ public class MultiplayerManager : MonoBehaviour
         }
     }
 
+    private void SetGameMaster()
+    {
+        GameObject gameMasterObj = GameObject.FindWithTag("GameMaster");
+        if(gameMasterObj == null)
+        {
+           Debug.LogError("Could not find GameMaster in scene!!");
+           return;
+        }
+        
+        _gameMasterScript = gameMasterObj.GetComponent<GameMaster>();
+        if (_gameMasterScript == null)
+        {
+            Debug.LogError("GameMaster component not found on GameMaster object!!");
+        }
+    }
+    
 
     private void UpdateGameState(ServerMessage data)
     {
@@ -158,7 +209,13 @@ public class MultiplayerManager : MonoBehaviour
             return;
         }
 
+        if (!_isReady)
+        {
+            _queue.Add(data.state);
+        }
+
         gameState.GameState = data.state;
+        _gameMasterScript.UpdateGameState(gameState.GameState);
     }
 
     private void HandleJoinGame(ServerMessage data)

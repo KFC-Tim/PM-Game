@@ -4615,6 +4615,9 @@ MonoBehaviour:
   answerButtonText2: {fileID: 363568978}
   answerButtonText3: {fileID: 1452589024}
   answerButtonText4: {fileID: 41199362}
+  OnAnswerSubmitted:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!4 &910898785
 Transform:
   m_ObjectHideFlags: 0
@@ -10237,7 +10240,7 @@ GameObject:
   - component: {fileID: 1943950537}
   m_Layer: 0
   m_Name: GameMaster
-  m_TagString: Untagged
+  m_TagString: GameMaster
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

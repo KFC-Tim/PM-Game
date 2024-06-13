@@ -55,6 +55,59 @@ public class GameMaster : MonoBehaviour
         // Starts the game
         AtTurn();
     }
+
+    public void UpdateGameState(MultiplayerManager.GameState gameState)
+    {
+        int i = 0;
+        foreach (var player in gameState.players)
+        {
+            playerPieces[i].SetPosition(player.playerPosition);
+            ++i;
+        }
+    }
+
+    public string AnswerQuestion(MultiplayerManager.QuestionData questionData)
+    {
+        string answer = null;
+            
+        StartCoroutine(WaitForAnswer(questionData, (result) => answer = result));
+
+        while (answer == null)
+        {
+            System.Threading.Thread.Sleep(1000);
+        }
+        
+        return answer;
+    }
+    
+    private IEnumerator WaitForAnswer(MultiplayerManager.QuestionData questionData, System.Action<string> callback)
+    {
+        Questions question = ConvertToQuestion(questionData);
+        IEnumerator askQuestionCoroutine = questionsController.AskQuestion(question);
+        yield return StartCoroutine(askQuestionCoroutine);
+
+        string playerAnswer = askQuestionCoroutine.Current as string;
+        callback(playerAnswer);
+    }
+
+    private IEnumerator AskQuestion(MultiplayerManager.QuestionData questionData)
+    { 
+        Questions question = ConvertToQuestion(questionData);
+        IEnumerator askQuestionCoroutine = questionsController.AskQuestion(question);
+        yield return StartCoroutine(askQuestionCoroutine);
+
+        string playerAnswer = askQuestionCoroutine.Current as string;
+    }
+
+    private Questions ConvertToQuestion(MultiplayerManager.QuestionData questionData)
+    {
+        string qText = questionData.question;
+        string[] qAnswers = questionData.answers;
+        
+        Questions q = new Questions(qText, qAnswers, " ", 2, 2);
+
+        return q;
+    }
     
     // Called if a player is at the turn    
     public void AtTurn()
@@ -78,7 +131,7 @@ public class GameMaster : MonoBehaviour
         //TODO implement EndTurn when SkipQuestion is true
         if (!skipQuestion[currentPlayerIndex])
         {
-            questionsController.AskQuestion();
+            //questionsController.AskQuestion();
         }
         else
         {
