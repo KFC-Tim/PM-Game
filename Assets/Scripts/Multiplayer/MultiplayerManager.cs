@@ -12,7 +12,8 @@ public class MultiplayerManager : MonoBehaviour
     private WebSocket websocket;
     private ClientGameState gameState;
     private GameMaster _gameMasterScript;
-    private List<GameState> _queue;
+    private List<GameState> _gameDataQueue = new List<GameState>();
+    private List<QuestionData> _questionDataQueue = new List<QuestionData>();
     private bool _isReady = true;
 
     void Start()
@@ -86,6 +87,7 @@ public class MultiplayerManager : MonoBehaviour
     }
     public void JoinGame(string newGameId, string newPlayerName)
     {
+        _gameDataQueue = new List<GameState>();
         var joinMessage = new JoinMessage
         {
             type = "join",
@@ -120,15 +122,33 @@ public class MultiplayerManager : MonoBehaviour
         Debug.Log("GameScene is loaded completely.");
         SetGameMaster();
         _isReady = true;
-        LoadQueue();
+        LoadQueues();
     }
 
-    private void LoadQueue()
+    private void LoadQueues()
     {
-        foreach (var gameState in _queue)
+        LoadQuestionDataQueue();
+        LoadQuestionDataQueue();
+    }
+    
+    private void LoadGameDataQueue()
+    {
+        foreach (var gameState in _gameDataQueue)
         {
             _gameMasterScript.UpdateGameState(gameState);
         }
+        
+        _gameDataQueue.Clear();
+    }
+
+    private void LoadQuestionDataQueue()
+    {
+        foreach (var question in _questionDataQueue)
+        {
+            DisplayQuestion(question);
+        }
+        
+        _questionDataQueue.Clear();
     }
 
     async void SendMessageToServer(string message)
@@ -209,9 +229,21 @@ public class MultiplayerManager : MonoBehaviour
             return;
         }
 
+        if (data.state == null)
+        {
+            Debug.LogError("ServerMessage has no GameState in it");
+            return;
+        }
+
         if (!_isReady)
         {
-            _queue.Add(data.state);
+            if (_gameDataQueue == null)
+            {
+                Debug.LogError("Server queque is null");
+                return;
+            }
+            _gameDataQueue.Add(data.state);
+            return;
         }
 
         gameState.GameState = data.state;
@@ -275,6 +307,12 @@ public class MultiplayerManager : MonoBehaviour
 
     private void DisplayQuestion(QuestionData questionData)
     {
+        if (!_isReady)
+        {
+            _questionDataQueue.Add(questionData);
+            return;
+        }
+        _gameMasterScript.AnswerQuestion(questionData);
         Debug.Log("Question: " + questionData.question);
         for (int i = 0; i < questionData.answers.Length; i++)
         {
