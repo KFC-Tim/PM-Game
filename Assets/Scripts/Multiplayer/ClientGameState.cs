@@ -11,6 +11,8 @@ public class ClientGameState : MonoBehaviour
     private GameState gameState = null;
     private string gameId = "";
 
+    
+
     // Start is called before the first frame update
     void Start()
     {

@@ -3903,6 +3903,7 @@ Transform:
   - {fileID: 1508570521}
   - {fileID: 302973734}
   - {fileID: 726570416}
+  - {fileID: 1822429217}
   - {fileID: 1707844155}
   - {fileID: 1008773897}
   - {fileID: 2019430473}
@@ -8906,17 +8907,15 @@ MonoBehaviour:
   - {fileID: 620278824}
   - {fileID: 465245180}
   - {fileID: 2099000460}
-  - {fileID: 2129252408}
   - {fileID: 106361065}
   - {fileID: 1508570522}
   - {fileID: 711829806}
   - {fileID: 302973735}
   - {fileID: 726570417}
-  - {fileID: 597302726}
+  - {fileID: 1822429218}
   - {fileID: 1707844156}
   - {fileID: 1008773898}
   - {fileID: 2019430474}
-  - {fileID: 556208650}
   - {fileID: 1949302975}
   - {fileID: 50552123}
   - {fileID: 1558234337}
@@ -8926,7 +8925,6 @@ MonoBehaviour:
   - {fileID: 1886343535}
   - {fileID: 819812552}
   - {fileID: 996646078}
-  - {fileID: 1633900461}
   - {fileID: 610068257}
   - {fileID: 2020043243}
   - {fileID: 1690789163}
@@ -8936,10 +8934,6 @@ MonoBehaviour:
   - {fileID: 1358842001}
   - {fileID: 518878566}
   - {fileID: 466069043}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
   boardPathBlue:
   - {fileID: 2129252408}
   - {fileID: 106361065}
@@ -8947,11 +8941,10 @@ MonoBehaviour:
   - {fileID: 1508570522}
   - {fileID: 302973735}
   - {fileID: 726570417}
-  - {fileID: 597302726}
+  - {fileID: 1822429218}
   - {fileID: 1707844156}
   - {fileID: 1008773898}
   - {fileID: 2019430474}
-  - {fileID: 556208650}
   - {fileID: 1949302975}
   - {fileID: 50552123}
   - {fileID: 1558234337}
@@ -8961,7 +8954,6 @@ MonoBehaviour:
   - {fileID: 1886343535}
   - {fileID: 819812552}
   - {fileID: 996646078}
-  - {fileID: 1633900461}
   - {fileID: 610068257}
   - {fileID: 2020043243}
   - {fileID: 1690789163}
@@ -8971,7 +8963,6 @@ MonoBehaviour:
   - {fileID: 1358842001}
   - {fileID: 518878566}
   - {fileID: 466069043}
-  - {fileID: 1861033863}
   - {fileID: 1803608224}
   - {fileID: 866425005}
   - {fileID: 1156203602}
@@ -8981,10 +8972,6 @@ MonoBehaviour:
   - {fileID: 620278824}
   - {fileID: 465245180}
   - {fileID: 2099000460}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
   boardPathYellow:
   - {fileID: 556208650}
   - {fileID: 1949302975}
@@ -8996,7 +8983,6 @@ MonoBehaviour:
   - {fileID: 1886343535}
   - {fileID: 819812552}
   - {fileID: 996646078}
-  - {fileID: 1633900461}
   - {fileID: 610068257}
   - {fileID: 2020043243}
   - {fileID: 1690789163}
@@ -9006,7 +8992,6 @@ MonoBehaviour:
   - {fileID: 1358842001}
   - {fileID: 518878566}
   - {fileID: 466069043}
-  - {fileID: 1861033863}
   - {fileID: 1803608224}
   - {fileID: 866425005}
   - {fileID: 1156203602}
@@ -9016,20 +9001,15 @@ MonoBehaviour:
   - {fileID: 620278824}
   - {fileID: 465245180}
   - {fileID: 2099000460}
-  - {fileID: 2129252408}
   - {fileID: 106361065}
   - {fileID: 1508570522}
   - {fileID: 711829806}
   - {fileID: 302973735}
   - {fileID: 726570417}
-  - {fileID: 597302726}
+  - {fileID: 1822429218}
   - {fileID: 1707844156}
   - {fileID: 1008773898}
   - {fileID: 2019430474}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
   boardPathGreen:
   - {fileID: 1633900461}
   - {fileID: 610068257}
@@ -9041,7 +9021,6 @@ MonoBehaviour:
   - {fileID: 1358842001}
   - {fileID: 518878566}
   - {fileID: 466069043}
-  - {fileID: 1861033863}
   - {fileID: 1803608224}
   - {fileID: 866425005}
   - {fileID: 1156203602}
@@ -9051,17 +9030,15 @@ MonoBehaviour:
   - {fileID: 620278824}
   - {fileID: 465245180}
   - {fileID: 2099000460}
-  - {fileID: 2129252408}
   - {fileID: 106361065}
   - {fileID: 1508570522}
   - {fileID: 711829806}
   - {fileID: 302973735}
   - {fileID: 726570417}
-  - {fileID: 597302726}
+  - {fileID: 1822429218}
   - {fileID: 1707844156}
   - {fileID: 1008773898}
   - {fileID: 2019430474}
-  - {fileID: 556208650}
   - {fileID: 1949302975}
   - {fileID: 50552123}
   - {fileID: 1558234337}
@@ -9071,10 +9048,6 @@ MonoBehaviour:
   - {fileID: 1886343535}
   - {fileID: 819812552}
   - {fileID: 996646078}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
 --- !u!4 &1730829173
 Transform:
   m_ObjectHideFlags: 0
@@ -9740,6 +9713,85 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1821513270}
   m_CullTransparentMesh: 1
+--- !u!1001 &1822429216
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 781767267}
+    m_Modifications:
+    - target: {fileID: 1056577265708996, guid: 8564b620cad6a7d46a3a2588c5526e90, type: 3}
+      propertyPath: m_Name
+      value: blau_feld_6_normal
+      objectReference: {fileID: 0}
+    - target: {fileID: 4794767148709886, guid: 8564b620cad6a7d46a3a2588c5526e90, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4794767148709886, guid: 8564b620cad6a7d46a3a2588c5526e90, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4794767148709886, guid: 8564b620cad6a7d46a3a2588c5526e90, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4794767148709886, guid: 8564b620cad6a7d46a3a2588c5526e90, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4794767148709886, guid: 8564b620cad6a7d46a3a2588c5526e90, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4794767148709886, guid: 8564b620cad6a7d46a3a2588c5526e90, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -21
+      objectReference: {fileID: 0}
+    - target: {fileID: 4794767148709886, guid: 8564b620cad6a7d46a3a2588c5526e90, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4794767148709886, guid: 8564b620cad6a7d46a3a2588c5526e90, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4794767148709886, guid: 8564b620cad6a7d46a3a2588c5526e90, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4794767148709886, guid: 8564b620cad6a7d46a3a2588c5526e90, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4794767148709886, guid: 8564b620cad6a7d46a3a2588c5526e90, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4794767148709886, guid: 8564b620cad6a7d46a3a2588c5526e90, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4794767148709886, guid: 8564b620cad6a7d46a3a2588c5526e90, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 8564b620cad6a7d46a3a2588c5526e90, type: 3}
+--- !u!4 &1822429217 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4794767148709886, guid: 8564b620cad6a7d46a3a2588c5526e90, type: 3}
+  m_PrefabInstance: {fileID: 1822429216}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1822429218 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1056577265708996, guid: 8564b620cad6a7d46a3a2588c5526e90, type: 3}
+  m_PrefabInstance: {fileID: 1822429216}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1861033862
 PrefabInstance:
   m_ObjectHideFlags: 0
