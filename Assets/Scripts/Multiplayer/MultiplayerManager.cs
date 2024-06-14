@@ -193,12 +193,22 @@ public class MultiplayerManager : MonoBehaviour
         Debug.Log("Joined Game: " + gameState.GameId);
         foreach (var player in data.state.players)
         {
+            
             if (player == null)
             {
                 Debug.LogError("Player is null in players list");
                 continue;
             }
             Debug.Log("Player UUID: " + player.uuid + ", Name: " + player.name);
+
+            /*switch(player.playerIndex)
+            {
+                case 0:
+                    player.playerCamera = 
+            }
+
+            player.playerCamera = play*/
+
         }
 
         foreach (var score in data.state.scores)

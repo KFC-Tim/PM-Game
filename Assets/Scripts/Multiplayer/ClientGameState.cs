@@ -10,6 +10,7 @@ public class ClientGameState : MonoBehaviour
     private int playerIndex = 0;
     private GameState gameState = null;
     private string gameId = "";
+    private Camera playerCamera;
 
     
 
@@ -49,4 +50,9 @@ public class ClientGameState : MonoBehaviour
         set { gameId = value; }
     }
     
+    public Camera PlayerCamera
+    {
+        get { return playerCamera; }
+        set { playerCamera = value; }
+    }
 }

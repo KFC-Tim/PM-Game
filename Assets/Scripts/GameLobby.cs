@@ -10,7 +10,7 @@ public class GameLobby : MonoBehaviour
     [SerializeField] private GameMaster _gameMaster;
     [SerializeField] private GameObject _startCanvas;
     [SerializeField] private Button _startButton;
-    [SerializeField] private Button _addPlayer;
+    [SerializeField] private GameObject[] _cameras = new GameObject[4];
     private int players = 1;
     
     // Start is called before the first frame update
@@ -31,31 +31,12 @@ public class GameLobby : MonoBehaviour
         _startCanvas.SetActive(true);
 
         _startButton.onClick.AddListener(() => StartButtonClick());
-        _addPlayer.onClick.AddListener(() => CheckAndAddPlayer());
     }
 
     // Update is called once per frame
     void Update()
     {
         
-    }
-
-    bool CheckAndAddPlayer()
-    {
-        if (players < 4)
-        {
-            players++;
-            if (players == 4)
-            {
-                _addPlayer.image.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
-            }
-            
-            return true;
-        }
-
-        
-
-        return false;
     }
 
     void StartButtonClick()
