@@ -7,60 +7,49 @@ using Unity.VisualScripting;
 
 public class GameLobby : MonoBehaviour
 {
-    [SerializeField] private GameMaster _gameMaster;
+    [SerializeField] private MultiplayerManager _multiplayerManager;
     [SerializeField] private GameObject _startCanvas;
+    [SerializeField] private GameObject _currentPlayerText;
     [SerializeField] private Button _startButton;
-    [SerializeField] private Button _addPlayer;
     private int players = 1;
     
     // Start is called before the first frame update
     void Start()
     {
-        if (_gameMaster == null)
+        _multiplayerManager = CrossSceneInformation.MultiplayerManager;
+        if (_multiplayerManager == null)
         {
-            Debug.LogError("ERROR GameMaster not set in GameLobby");
+            Debug.LogError("ERROR MultiplayerManager not set in GameLobby");
             return;
         }
         
         if (_startCanvas == null)
         {
             Debug.LogError("ERROR StartCanvas not set in GameLobby");
-            _gameMaster.StartGame(4);
         }
 
         _startCanvas.SetActive(true);
 
         _startButton.onClick.AddListener(() => StartButtonClick());
-        _addPlayer.onClick.AddListener(() => CheckAndAddPlayer());
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        players = _multiplayerManager.GetPlayerCount();
     }
 
-    bool CheckAndAddPlayer()
+    void UpdateCurrentPlayerText()
     {
-        if (players < 4)
-        {
-            players++;
-            if (players == 4)
-            {
-                _addPlayer.image.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
-            }
-            
-            return true;
-        }
-
-        
-
-        return false;
+        var text = _currentPlayerText.GetComponent<TextMeshProUGUI>();
+        text.SetText("Current Players: " + players);
     }
+    
 
     void StartButtonClick()
     {
+        Debug.Log("Start Button in Lobby Clicked!!");
         _startCanvas.SetActive(false);
-        _gameMaster.StartGame(players);
+        _multiplayerManager.StartGame();
     }
 }

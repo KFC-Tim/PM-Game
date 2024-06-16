@@ -16,7 +16,7 @@ public class GameMaster : MonoBehaviour
     [SerializeField] private GameObject[] playerPiecePrefabs = new GameObject[4];
     public PlayerPiece[] playerPieces;
     public int[] playerRounds = new int[4];
-
+    
 
     [SerializeField] private Board board;
 
@@ -28,11 +28,14 @@ public class GameMaster : MonoBehaviour
     private bool[] skipQuestion = {false, false, false, false};
     private bool hasSelected = false;
 
+    public static GameMaster Instance { get; private set; }
 
 
     // Start is called before the first frame update
     void Start()
     {
+        Debug.Log("GameMaster started!!");
+        
         if(board == null){
             Debug.Log("Board component not foun in the scene");
             return;
@@ -43,8 +46,18 @@ public class GameMaster : MonoBehaviour
         // maybe here the random or by join the lobby
         currentPlayerIndex = 0;
         gameIsOver = false;
-
-        
+    }
+    
+    void Awake() 
+    { 
+        if (Instance != null && Instance != this) 
+        { 
+            Destroy(this); 
+        } 
+        else 
+        { 
+            Instance = this; 
+        } 
     }
 
     public void StartGame(int totalPlayers)

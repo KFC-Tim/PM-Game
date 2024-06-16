@@ -17,6 +17,7 @@ public class InventoryManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        Debug.Log(this.name + " loaded!");
         HideInventory();
         eventsInventory[0] = new List<FieldEvent>();
         eventsInventory[1] = new List<FieldEvent>();

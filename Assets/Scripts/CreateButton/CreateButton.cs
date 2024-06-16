@@ -14,6 +14,7 @@ public class CreateButton : MonoBehaviour
         {
             myButton.onClick.AddListener(OnButtonClick);
         }
+        CrossSceneInformation.MultiplayerManager = multiplayerManager;
     }
 
     // Diese Methode wird aufgerufen, wenn der Button geklickt wird

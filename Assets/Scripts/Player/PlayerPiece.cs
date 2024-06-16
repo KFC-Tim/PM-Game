@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,6 +10,11 @@ public class PlayerPiece : MonoBehaviour
     private int currentPosition = 0;
     private int currentRounds = 0;
     public bool isHome;
+
+    private void Start()
+    {
+        Debug.Log(this.name + " loaded!");
+    }
 
     // Method to set the path for this player piece
     public void SetPath(GameObject[] newPath)

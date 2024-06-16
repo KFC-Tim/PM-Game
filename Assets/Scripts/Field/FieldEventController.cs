@@ -11,6 +11,8 @@ public class FieldEventController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        Debug.Log(this.name + " loaded!");
+        
         _fields.Add(new FieldEvent());
         _fields.Add(new FieldEvent());
         _fields.Add(new FieldEvent());
@@ -19,7 +21,7 @@ public class FieldEventController : MonoBehaviour
         _currentCard = _fields.Count - 1;
     }
 
-    //returns the next FieldEventCard on a "stack" of card´s,
+    //returns the next FieldEventCard on a "stack" of cardï¿½s,
     //if "stack" is empty shuffle and start at the top of the "stack"
     public FieldEvent GetFieldEvent()
     {

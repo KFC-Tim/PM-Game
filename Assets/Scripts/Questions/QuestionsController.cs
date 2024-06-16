@@ -24,6 +24,8 @@ public class QuestionsController : MonoBehaviour
 
     private Questions currentQuestion;
     private string playerAnswer;
+    
+    public static QuestionsController Instance { get; private set; }
 
     [System.Serializable]
     public class AnswerEvent : UnityEvent<string> { };
@@ -33,6 +35,8 @@ public class QuestionsController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        Debug.Log("QuestionsController started!");
+        
         questions.Add(new Questions("Test1", new string[] {"A", "B", "C", "D"}, "B", 2, 2));
         questions.Add(new Questions("Test2", new string[] {"1", "2", "3", "4"}, "2", 2, 2));
         questions.Add(new Questions("Test3", new string[] {"K", "B", "C", "D"}, "B", 2, 2));
@@ -43,6 +47,18 @@ public class QuestionsController : MonoBehaviour
         answerButton2.onClick.AddListener(() => OnAnswerButtonClick(answerButton2));
         answerButton3.onClick.AddListener(() => OnAnswerButtonClick(answerButton3));
         answerButton4.onClick.AddListener(() => OnAnswerButtonClick(answerButton4));
+    }
+    
+    void Awake() 
+    { 
+        if (Instance != null && Instance != this) 
+        { 
+            Destroy(this); 
+        } 
+        else 
+        { 
+            Instance = this; 
+        } 
     }
 
     public IEnumerator AskQuestion(Questions q)
