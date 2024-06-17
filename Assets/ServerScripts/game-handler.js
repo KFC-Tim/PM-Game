@@ -48,8 +48,12 @@ function handleMessage(ws, msg) {
         case 'start':
             handleStartGame(ws, msg.gameId);
             break;
+        case 'answer': // Add case for handling 'answer' type
+            handleAnswer(ws, msg);
+            break;
         default:
             console.warn("Unhandled message type:", msg.type);
+            ws.send(JSON.stringify({ type: 'error', message: 'Unknown message type' }));
             break;
     }
 }
@@ -60,6 +64,7 @@ function handleStartGame(ws, gameId) {
         return;
     }
     ws.send(JSON.stringify({ type: 'start', message: 'Game started' }));
+    console.log("Game started: " + gameId)
     gameMaster(gameId);
 }
 
@@ -195,34 +200,43 @@ function gameMaster(gameId) {
 
     // Handle response from the player
     players[currentPlayerId].ws.once('message', (message) => {
-        // Check again if the player is still connected
-        if (players[currentPlayerId].ws.readyState !== WebSocket.OPEN) {
-            // If the player disconnected during their turn, skip their turn
-            game.currentTurn = (game.currentTurn + 1) % game.players.length;
-            broadcastGameState(gameId);
-            setTimeout(() => {
-                gameMaster(gameId);
-            }, 300);
-            return;
-        }
-
-        const answer = JSON.parse(message).answer;
-        const correctAnswer = question.correctAnswer;
-        let points = 0;
-
-        // Check if the answer is correct
-        if (answer === correctAnswer) {
-            points = question.steps;
-            games[gameId].scores[currentPlayerId] += points;
-        }
-
-        game.currentTurn = (game.currentTurn + 1) % game.players.length;
-        broadcastGameState(gameId);
-
-        setTimeout(() => {
-            gameMaster(gameId);
-        }, 300);
+        handleAnswer(players[currentPlayerId].ws, JSON.parse(message));
     });
+}
+
+function handleAnswer(ws, msg) {
+    const playerId = Object.keys(players).find(id => players[id].ws === ws);
+    if (!playerId) {
+        console.error("Player not found for given WebSocket");
+        return;
+    }
+    
+    const gameId = players[playerId].gameId;
+    const game = games[gameId];
+    if (!game) {
+        console.error("Game not found for player:", playerId);
+        return;
+    }
+    
+    const questionIndex = game.usedQuestions[game.usedQuestions.length - 1];
+    const question = questions[questionIndex];
+    
+    const answer = msg.answer;
+    const correctAnswer = question.correctAnswer;
+    let points = 0;
+    
+    // Check if the answer is correct
+    if (answer === correctAnswer) {
+        points = question.steps;
+        games[gameId].scores[playerId] += points;
+    }
+    
+    game.currentTurn = (game.currentTurn + 1) % game.players.length;
+    broadcastGameState(gameId);
+    
+    setTimeout(() => {
+        gameMaster(gameId);
+    }, 300);
 }
 
 console.log("----------------------------------------");
