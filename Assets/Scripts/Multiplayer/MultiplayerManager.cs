@@ -49,6 +49,17 @@ public class MultiplayerManager : MonoBehaviour
         return Instance;
     }
 
+    public string GetGameId()
+    {
+        if (_gameState == null)
+        {
+            Debug.LogError("GameState is not set in MultiplayerManager");
+            return "ERROR";
+        }
+
+        return _gameState.GameId;
+    }
+
     async void ConnectToServer()
     {
         websocket = new WebSocket("ws://87.106.165.86:8080");

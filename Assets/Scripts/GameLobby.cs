@@ -10,6 +10,7 @@ public class GameLobby : MonoBehaviour
     [SerializeField] private MultiplayerManager _multiplayerManager;
     [SerializeField] private GameObject _startCanvas;
     [SerializeField] private GameObject _currentPlayerText;
+    [SerializeField] private GameObject _gameIdText;
     [SerializeField] private Button _startButton;
     private int players = 1;
     
@@ -27,6 +28,9 @@ public class GameLobby : MonoBehaviour
         {
             Debug.LogError("ERROR StartCanvas not set in GameLobby");
         }
+
+        var gameIdText = _gameIdText.GetComponent<TextMeshProUGUI>();
+        gameIdText.SetText("Game ID: " + _multiplayerManager.GetGameId());
 
         _startCanvas.SetActive(true);
 
