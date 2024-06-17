@@ -8,11 +8,12 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using UnityEngine.SceneManagement;
 using static MultiplayerManager;
+using Newtonsoft.Json; 
 
 public class MultiplayerManager : MonoBehaviour
 {
     private WebSocket websocket;
-    private ClientGameState gameState;
+    private ClientGameState _gameState = new ClientGameState();
     private GameMaster _gameMasterScript;
     private List<GameState> _gameDataQueue = new List<GameState>();
     private List<QuestionData> _questionDataQueue = new List<QuestionData>();
@@ -22,7 +23,7 @@ public class MultiplayerManager : MonoBehaviour
 
     void Start()
     {
-        gameState = new ClientGameState();
+        _gameState = new ClientGameState();
         ConnectToServer();
     }
     
@@ -89,6 +90,7 @@ public class MultiplayerManager : MonoBehaviour
         SceneManager.LoadScene("MenuScene");
     }
 
+    [System.Serializable]
     public class CreateMessage
     {
         public string type;
@@ -102,7 +104,12 @@ public class MultiplayerManager : MonoBehaviour
             type = "create",
             playerName = newPlayerName
         };
-        SendMessageToServer(JsonUtility.ToJson(createMessage));
+        var settings = new JsonSerializerSettings
+        {
+            TypeNameHandling = TypeNameHandling.Auto
+        };
+        
+        SendMessageToServer(JsonConvert.SerializeObject(createMessage, settings));
     }
 
     public class JoinMessage
@@ -120,7 +127,12 @@ public class MultiplayerManager : MonoBehaviour
             playerName = newPlayerName,
             gameId = newGameId
         };
-        SendMessageToServer(JsonUtility.ToJson(joinMessage));
+        var settings = new JsonSerializerSettings
+        {
+            TypeNameHandling = TypeNameHandling.Auto
+        };
+        
+        SendMessageToServer(JsonConvert.SerializeObject(joinMessage, settings));
     }
     
     public void SwitchToLobbyScene()
@@ -139,7 +151,7 @@ public class MultiplayerManager : MonoBehaviour
 
     public void StartGame()
     {
-        SendMessageToServer("{\"type\": \"start\", \"gameId\": \""+ gameState.GameId +"\"}");
+        SendMessageToServer("{\"type\": \"start\", \"gameId\": \""+ _gameState.GameId +"\"}");
         Debug.Log("Game Started");
         SwitchToGameScene();
     }
@@ -168,6 +180,7 @@ public class MultiplayerManager : MonoBehaviour
         foreach (var gameState in _gameDataQueue)
         {
             _gameMasterScript.UpdateGameState(gameState);
+            Debug.Log("Loading: " + JsonConvert.SerializeObject(gameState));
         }
         
         _gameDataQueue.Clear();
@@ -200,9 +213,24 @@ public class MultiplayerManager : MonoBehaviour
     void OnMessageReceived(string message)
     {
         Debug.Log("Received message: " + message); // Log the received message for debugging
-        var data = JsonUtility.FromJson<ServerMessage>(message);
-        // Additional logging to inspect the deserialized data
-        Debug.Log("Deserialized ServerMessage: " + JsonUtility.ToJson(data));
+        ServerMessage data;
+        try
+        {
+            data = JsonConvert.DeserializeObject<ServerMessage>(message);
+            // Additional logging to inspect the deserialized data
+            if (data == null)
+            {
+                Debug.LogWarning("Deserialization resulted in a null object.");
+                return;
+            }
+            //Debug.Log("Deserialized ServerMessage: " + JsonConvert.ToString(data));
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(e);
+            throw;
+        }
+        
 
         if (data == null || string.IsNullOrEmpty(data.type))
         {
@@ -297,8 +325,10 @@ public class MultiplayerManager : MonoBehaviour
             return;
         }
 
-        gameState.GameState = data.state;
-        _gameMasterScript.UpdateGameState(gameState.GameState);
+        _gameState.GameState = data.state;
+        Debug.Log(_gameState);
+        Debug.Log("GameState:  "+ JsonConvert.SerializeObject(_gameState.GameState));
+        _gameMasterScript.UpdateGameState(_gameState.GameState);
     }
 
     private void HandleJoinGame(ServerMessage data)
@@ -309,13 +339,18 @@ public class MultiplayerManager : MonoBehaviour
             return;
         }
 
-        if (data.state == null)
-        {
-            Debug.LogError("GameState in ServerMessage is null");
-            return;
-        }
+        //if (data.state == null)
+        //{
+        //    Debug.LogError("GameState in ServerMessage is null");
+        //    return;
+        //}
 
         // Initialize the players list if it is null
+        if (data.state == null)
+        {
+            data.state = new GameState();
+        }
+        
         if (data.state.players == null)
         {
             data.state.players = new List<Player>();
@@ -327,10 +362,10 @@ public class MultiplayerManager : MonoBehaviour
             data.state.scores = new Dictionary<string, int>();
         }
 
-        gameState.GameId = data.gameId;
-        gameState.GameState = data.state;
+        _gameState.GameId = data.gameId;
+        _gameState.GameState = data.state;
 
-        Debug.Log("Joined Game: " + gameState.GameId);
+        Debug.Log("Joined Game: " + _gameState.GameId);
         _playerCount = 0;
         foreach (var player in data.state.players)
         {
@@ -358,6 +393,7 @@ public class MultiplayerManager : MonoBehaviour
     }
 
 
+    [System.Serializable]
     private class AnswerMessage
     {
         public string type;
@@ -384,7 +420,7 @@ public class MultiplayerManager : MonoBehaviour
                     type = "answer",
                     answer = answer 
                 };
-                SendMessageToServer(JsonUtility.ToJson(answerMessage));
+                SendMessageToServer(JsonConvert.SerializeObject(answerMessage));
             });
         }
         catch (Exception e)

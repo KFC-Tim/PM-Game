@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using static MultiplayerManager;
 
-public class ClientGameState : MonoBehaviour
+public class ClientGameState
 {
 
     private string playerName = "";

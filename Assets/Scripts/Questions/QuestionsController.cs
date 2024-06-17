@@ -92,7 +92,7 @@ public class QuestionsController : MonoBehaviour
     {
         string answer = clickedButton.GetComponentInChildren<TMP_Text>().text;
         OnAnswerSubmitted.Invoke(answer);
-        EvaluateAnswer(answer, clickedButton);
+        //EvaluateAnswer(answer, clickedButton);
     }
     
     private void EvaluateAnswer(string answer, Button clickedButton)

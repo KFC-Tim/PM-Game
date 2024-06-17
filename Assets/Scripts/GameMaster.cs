@@ -82,6 +82,24 @@ public class GameMaster : MonoBehaviour, IGameController
             Debug.LogError("Player Pieces is null!!");
             return;
         }
+        if (gameState == null)
+        {
+            Debug.LogError("GameState is null");
+            return;
+        }
+
+        if (gameState.scores == null)
+        {
+            Debug.LogError("GameStates Scoreboard is null");
+            return;
+        }
+        
+        if (gameState.players == null)
+        {
+            Debug.LogError("GameStates Players is null");
+            return;
+        }
+        
         Debug.Log(playerPieces.Count);
         foreach (var player in gameState.players)
         {
@@ -104,8 +122,16 @@ public class GameMaster : MonoBehaviour, IGameController
                     playerPieces[i] = pieceInstance.GetComponent<PlayerPiece>();
                     playerPieces[i].SetPath(GetBoardPathForTeam(i));
                 }
-                playerPieces[i % totalPlayers].SetPosition(player.playerPosition);
-                Debug.Log("Set Player " + i + "'s position to: " + player.playerPosition);
+
+                
+                
+                if (!gameState.scores.ContainsKey(player.uuid))
+                {
+                    Debug.LogError(player.uuid + " not in Scoreboard");
+                    continue;
+                }
+                playerPieces[i % totalPlayers].SetPosition(gameState.scores[player.uuid]);
+                Debug.Log("Set Player " + i + "'s position to: " + gameState.scores[player.uuid]);
                 ++i;
                 i %= 4;
             }
@@ -206,6 +232,11 @@ public class GameMaster : MonoBehaviour, IGameController
         }
         
         skipQuestion[currentPlayerIndex] = false;
+    }
+
+    public void EndGame(string winner)
+    {
+        //TODO implement winning message
     }
 
     // Called at the end of a turn
