@@ -10,7 +10,6 @@ public class GameLobby : MonoBehaviour
     [SerializeField] private GameMaster _gameMaster;
     [SerializeField] private GameObject _startCanvas;
     [SerializeField] private Button _startButton;
-    [SerializeField] private GameObject[] _cameras = new GameObject[4];
     private int players = 1;
     
     // Start is called before the first frame update

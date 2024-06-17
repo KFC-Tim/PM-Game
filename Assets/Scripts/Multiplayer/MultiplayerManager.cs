@@ -201,15 +201,9 @@ public class MultiplayerManager : MonoBehaviour
             }
             Debug.Log("Player UUID: " + player.uuid + ", Name: " + player.name);
 
-            /*switch(player.playerIndex)
-            {
-                case 0:
-                    player.playerCamera = 
-            }
-
-            player.playerCamera = play*/
-
+            ActivatePlayerCamera(player.index);
         }
+        UpdatePlayerNamesUI(player.data.players);
 
         foreach (var score in data.state.scores)
         {
@@ -217,6 +211,65 @@ public class MultiplayerManager : MonoBehaviour
         }
 
         Debug.Log("Current Turn: " + data.state.currentTurn);
+    }
+
+    private void ActivatePlayerCamera(int playerIndex)
+    {
+        // Deactivate all cameras first
+        DeactivateAllCameras();
+
+        // Activate the camera corresponding to the player's index
+        switch (playerIndex)
+        {
+            case 0:
+                GameObject.Find("Rot_Kamera").GetComponent<Camera>().enabled = true;
+                break;
+            case 1:
+                GameObject.Find("Blau_Kamera").GetComponent<Camera>().enabled = true;
+                break;
+            case 2:
+                GameObject.Find("Gelb_Kamera").GetComponent<Camera>().enabled = true;
+                break;
+            case 3:
+                GameObject.Find("Gruen_Kamera").GetComponent<Camera>().enabled = true;
+                break;
+            default:
+                Debug.LogError("Invalid player index: " + playerIndex);
+                break;
+        }
+    }
+
+    private void DeactivateAllCameras()
+    {
+        GameObject.Find("Rot_Kamera").GetComponent<Camera>().enabled = false;
+        GameObject.Find("Blau_Kamera").GetComponent<Camera>().enabled = false;
+        GameObject.Find("Gelb_Kamera").GetComponent<Camera>().enabled = false;
+        GameObject.Find("Gruen_Kamera").GetComponent<Camera>().enabled = false;
+    }
+
+    private void UpdatePlayerNamesUI(List<Player> players)
+    {
+        foreach (var player in players)
+        {
+            switch (player.playerIndex)
+            {
+                case 0:
+                    GameObject.Find("Rot_Name").GetComponent<TMPro_Text>().text = player.name;
+                    break;
+                case 1:
+                    GameObject.Find("Blau_Name").GetComponent<TMPro_Text>().text = player.name;
+                    break;
+                case 2:
+                    GameObject.Find("Gelb_Name").GetComponent<TMPro_Text>().text = player.name;
+                    break;
+                case 3:
+                     ameObject.Find("Gruen_Name").GetComponent<TMPro_Text>().text = player.name;
+                    break;
+                default:
+                    Debug.LogError("Invalid player position: " + player.playerIndex);
+                    break;
+            }
+        }
     }
 
 
