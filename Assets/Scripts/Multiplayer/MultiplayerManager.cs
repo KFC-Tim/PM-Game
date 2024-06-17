@@ -117,9 +117,10 @@ public class MultiplayerManager : MonoBehaviour
         };
         var settings = new JsonSerializerSettings
         {
-            TypeNameHandling = TypeNameHandling.Auto
+            TypeNameHandling = TypeNameHandling.Auto,
+            ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor
         };
-        
+        Debug.Log("Serializing JSON CreateGame message");
         SendMessageToServer(JsonConvert.SerializeObject(createMessage, settings));
     }
 
@@ -140,7 +141,8 @@ public class MultiplayerManager : MonoBehaviour
         };
         var settings = new JsonSerializerSettings
         {
-            TypeNameHandling = TypeNameHandling.Auto
+            TypeNameHandling = TypeNameHandling.Auto,
+            ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor
         };
         
         SendMessageToServer(JsonConvert.SerializeObject(joinMessage, settings));
