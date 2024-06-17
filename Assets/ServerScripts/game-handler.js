@@ -59,6 +59,7 @@ function handleStartGame(ws, gameId) {
         ws.send(JSON.stringify({ type: 'error', message: 'Game not found' }));
         return;
     }
+    ws.send(JSON.stringify({ type: 'start', message: 'Game started' }));
     gameMaster(gameId);
 }
 
