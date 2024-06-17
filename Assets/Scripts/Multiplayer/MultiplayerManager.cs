@@ -201,9 +201,9 @@ public class MultiplayerManager : MonoBehaviour
             }
             Debug.Log("Player UUID: " + player.uuid + ", Name: " + player.name);
 
-            ActivatePlayerCamera(player.index);
+            ActivatePlayerCamera(player.playerPosition);
         }
-        UpdatePlayerNamesUI(player.data.players);
+        UpdatePlayerNamesUI(data.state.players);
 
         foreach (var score in data.state.scores)
         {
@@ -251,22 +251,22 @@ public class MultiplayerManager : MonoBehaviour
     {
         foreach (var player in players)
         {
-            switch (player.playerIndex)
+            switch (player.playerPosition)
             {
                 case 0:
-                    GameObject.Find("Rot_Name").GetComponent<TMPro_Text>().text = player.name;
+                    //GameObject.Find("Rot_Name").GetComponent<TMPro_Text>().text = player.name;
                     break;
                 case 1:
-                    GameObject.Find("Blau_Name").GetComponent<TMPro_Text>().text = player.name;
+                    //GameObject.Find("Blau_Name").GetComponent<TMPro_Text>().text = player.name;
                     break;
                 case 2:
-                    GameObject.Find("Gelb_Name").GetComponent<TMPro_Text>().text = player.name;
+                    //GameObject.Find("Gelb_Name").GetComponent<TMPro_Text>().text = player.name;
                     break;
                 case 3:
-                     ameObject.Find("Gruen_Name").GetComponent<TMPro_Text>().text = player.name;
+                    //GameObject.Find("Gruen_Name").GetComponent<TMPro_Text>().text = player.name;
                     break;
                 default:
-                    Debug.LogError("Invalid player position: " + player.playerIndex);
+                    Debug.LogError("Invalid player position: " + player.playerPosition);
                     break;
             }
         }
