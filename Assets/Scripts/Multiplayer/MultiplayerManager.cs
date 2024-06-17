@@ -272,6 +272,7 @@ public class MultiplayerManager : MonoBehaviour
                 break;
             case "start":
                 Debug.Log("Game Starts!");
+                GameStarts();
                 break;
             case "error":
                 Debug.LogError("Error: " + data.message);
@@ -280,6 +281,11 @@ public class MultiplayerManager : MonoBehaviour
                 Debug.LogWarning("Unhandled message type: " + data.type);
                 break;
         }
+    }
+
+    private void GameStarts()
+    {
+        SwitchToGameScene();
     }
 
     private IEnumerator SetGameMasterWhenReady()
