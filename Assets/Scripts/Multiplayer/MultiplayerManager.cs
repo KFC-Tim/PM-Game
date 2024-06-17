@@ -259,6 +259,9 @@ public class MultiplayerManager : MonoBehaviour
             case "game_end":
                 Debug.Log("Game End!");
                 break;
+            case "start":
+                Debug.Log("Game Starts!");
+                break;
             case "error":
                 Debug.LogError("Error: " + data.message);
                 break;
@@ -325,6 +328,8 @@ public class MultiplayerManager : MonoBehaviour
             return;
         }
 
+        _playerCount = data.state.scores.Count;
+
         _gameState.GameState = data.state;
         Debug.Log(_gameState);
         Debug.Log("GameState:  "+ JsonConvert.SerializeObject(_gameState.GameState));
@@ -338,14 +343,7 @@ public class MultiplayerManager : MonoBehaviour
             Debug.LogError("ServerMessage data is null");
             return;
         }
-
-        //if (data.state == null)
-        //{
-        //    Debug.LogError("GameState in ServerMessage is null");
-        //    return;
-        //}
-
-        // Initialize the players list if it is null
+        
         if (data.state == null)
         {
             data.state = new GameState();
@@ -362,11 +360,16 @@ public class MultiplayerManager : MonoBehaviour
             data.state.scores = new Dictionary<string, int>();
         }
 
+        if (data.playerNumber == null)
+        {
+            data.playerNumber = 1;
+        }
+
         _gameState.GameId = data.gameId;
         _gameState.GameState = data.state;
 
         Debug.Log("Joined Game: " + _gameState.GameId);
-        _playerCount = 0;
+        _playerCount = data.playerNumber;
         foreach (var player in data.state.players)
         {
             if (player == null)
@@ -447,6 +450,7 @@ public class MultiplayerManager : MonoBehaviour
         public GameState state;
         public string message;
         public QuestionData questionData;
+        public int playerNumber;
     }
 
     [System.Serializable]

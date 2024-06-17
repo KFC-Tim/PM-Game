@@ -37,6 +37,7 @@ public class GameLobby : MonoBehaviour
     void Update()
     {
         players = _multiplayerManager.GetPlayerCount();
+        UpdateCurrentPlayerText();
     }
 
     void UpdateCurrentPlayerText()
