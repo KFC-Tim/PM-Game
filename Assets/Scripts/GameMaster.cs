@@ -7,14 +7,14 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
 
-public class GameMaster : MonoBehaviour
+public class GameMaster : MonoBehaviour, IGameController
 {
     public InventoryManager inventoryManager;
     [SerializeField] private QuestionsController questionsController;
     public FieldEventController fieldEventController;
 
     [SerializeField] private GameObject[] playerPiecePrefabs = new GameObject[4];
-    public PlayerPiece[] playerPieces;
+    public List<PlayerPiece> playerPieces;
     public int[] playerRounds = new int[4];
     
 
@@ -35,13 +35,17 @@ public class GameMaster : MonoBehaviour
     void Start()
     {
         Debug.Log("GameMaster started!!");
+        CrossSceneInformation.SetGameMasterLoaded(true);
+        CrossSceneInformation.SetGameMasterInstance(this);
+        InitializePlayerPieces();
+        questionsController.SetGameController(this);
         
         if(board == null){
             Debug.Log("Board component not foun in the scene");
             return;
         }
 
-        InitializePlayerPieces();
+        //InitializePlayerPieces();
 
         // maybe here the random or by join the lobby
         currentPlayerIndex = 0;
@@ -72,25 +76,74 @@ public class GameMaster : MonoBehaviour
     public void UpdateGameState(MultiplayerManager.GameState gameState)
     {
         int i = 0;
+        Debug.Log("Updating Game State");
+        if (playerPieces == null)
+        {
+            Debug.LogError("Player Pieces is null!!");
+            return;
+        }
+        Debug.Log(playerPieces.Count);
         foreach (var player in gameState.players)
         {
-            playerPieces[i].SetPosition(player.playerPosition);
-            ++i;
+            try
+            {
+                if (i > playerPieces.Count)
+                {
+                    Debug.Log("Creating new Player Piece");
+                    Vector3 offset = new Vector3(0, 0.35f, 0);
+                    Vector3 startPosition = GetStartPosition(i) + offset;
+                    GameObject pieceInstance = Instantiate(playerPiecePrefabs[i], startPosition, Quaternion.identity);
+
+                    // enabeling the mesh renderer
+                    MeshRenderer meshRenderer = pieceInstance.GetComponent<MeshRenderer>();
+                    if (meshRenderer != null)
+                    {
+                        meshRenderer.enabled = true;
+                    }
+
+                    playerPieces[i] = pieceInstance.GetComponent<PlayerPiece>();
+                    playerPieces[i].SetPath(GetBoardPathForTeam(i));
+                }
+                playerPieces[i % totalPlayers].SetPosition(player.playerPosition);
+                Debug.Log("Set Player " + i + "'s position to: " + player.playerPosition);
+                ++i;
+                i %= 4;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e);
+            }
         }
     }
 
-    public string AnswerQuestion(MultiplayerManager.QuestionData questionData)
+    public void AnswerQuestion(MultiplayerManager.QuestionData questionData, Action<string> callback)
+    {
+        try
+        {
+            StartCoroutine(AnswerQuestionCoroutine(questionData, callback));
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(e);
+            throw;
+        }
+    }
+    
+    public IEnumerator AnswerQuestionCoroutine(MultiplayerManager.QuestionData questionData, Action<string> callback)
     {
         string answer = null;
-            
-        StartCoroutine(WaitForAnswer(questionData, (result) => answer = result));
 
-        while (answer == null)
+        yield return StartCoroutine(WaitForAnswer(questionData, (result) => answer = result));
+
+        callback(answer);
+    }
+
+    public void MovePlayerPiece(int playerindex, int steps)
+    {
+        if (playerindex >= 0 && playerindex < playerPieces.Count)
         {
-            System.Threading.Thread.Sleep(1000);
+            playerPieces[playerindex].MovePiece(steps);
         }
-        
-        return answer;
     }
     
     private IEnumerator WaitForAnswer(MultiplayerManager.QuestionData questionData, System.Action<string> callback)
@@ -104,9 +157,19 @@ public class GameMaster : MonoBehaviour
     }
 
     private IEnumerator AskQuestion(MultiplayerManager.QuestionData questionData)
-    { 
-        Questions question = ConvertToQuestion(questionData);
-        IEnumerator askQuestionCoroutine = questionsController.AskQuestion(question);
+    {
+        IEnumerator askQuestionCoroutine;
+        try
+        {
+            Questions question = ConvertToQuestion(questionData);
+            askQuestionCoroutine = questionsController.AskQuestion(question);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(e);
+            throw;
+        }
+        
         yield return StartCoroutine(askQuestionCoroutine);
 
         string playerAnswer = askQuestionCoroutine.Current as string;
@@ -114,10 +177,18 @@ public class GameMaster : MonoBehaviour
 
     private Questions ConvertToQuestion(MultiplayerManager.QuestionData questionData)
     {
-        string qText = questionData.question;
-        string[] qAnswers = questionData.answers;
-        
-        Questions q = new Questions(qText, qAnswers, " ", 2, 2);
+        Questions q;
+        try
+        {
+            string qText = questionData.question;
+            string[] qAnswers = questionData.answers;
+            q = new Questions(qText, qAnswers, " ", 2, 2);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(e);
+            throw;
+        }
 
         return q;
     }
@@ -134,58 +205,13 @@ public class GameMaster : MonoBehaviour
             inventoryManager.ClearCurrentEvent(currentPlayerIndex);
         }
         
-        
-        if (gameIsOver)
-        {
-            // TODO change scene
-            Debug.Log("Game is over. No more turns.");
-            return;
-        }
-        //TODO implement EndTurn when SkipQuestion is true
-        if (!skipQuestion[currentPlayerIndex])
-        {
-            //questionsController.AskQuestion();
-        }
-        else
-        {
-            EndTurn();
-        }
         skipQuestion[currentPlayerIndex] = false;
-
-        // TODO move by qutetions steps
-        GameObject currPositionGameObj = playerPieces[currentPlayerIndex].GetGameObjectPosition();
-        Field currField = currPositionGameObj.GetComponent<Field>();
-
-        if (!currField.IsUnityNull() && currField.IsEventField)
-        {
-            GetFieldEvent(currentPlayerIndex);
-        }
     }
 
     // Called at the end of a turn
     public void EndTurn()
     {
-        if (CheckForWin())
-        {
-            Debug.Log("Player " +  (currentPlayerIndex + 1)  +  " wins!");
-            gameIsOver = true;
-            // Return to WinningSequence;
-            return;
-        }
-        if (!gameIsOver)
-        {
-            currentPlayerIndex = (currentPlayerIndex + 1) % totalPlayers;
-            Debug.Log("Player " + (currentPlayerIndex + 1) + "'s turn.");
-            AtTurn();
-        }
-        if (gameIsOver)
-        {      
-            Debug.Log("Game is over. No more turns.");
-            // Return to EndSequence
-            return;
-        }
         
-
     }
 
     /* Color parseHexColor(string hexColor){
@@ -233,12 +259,11 @@ public class GameMaster : MonoBehaviour
     private void InitializePlayerPieces()
     {
 
-        playerPieces = new PlayerPiece[totalPlayers];
+        playerPieces = new List<PlayerPiece>();
         Vector3 offset = new Vector3(0, 0.35f, 0); // Move 1 unit higher on the y-axis
 
         for (int team = 0; team < totalPlayers; team++)
         {
-
                 Vector3 startPosition = GetStartPosition(team) + offset;
                 GameObject pieceInstance = Instantiate(playerPiecePrefabs[team], startPosition, Quaternion.identity);
 
@@ -249,10 +274,10 @@ public class GameMaster : MonoBehaviour
                     meshRenderer.enabled = true;
                 }
 
-                playerPieces[team] = pieceInstance.GetComponent<PlayerPiece>();
+                playerPieces.Add(pieceInstance.GetComponent<PlayerPiece>());
                 playerPieces[team].SetPath(GetBoardPathForTeam(team));
-            
         }
+        Debug.Log("Player Pieces initialized!");
     }
 
     private Vector3 GetStartPosition(int team)

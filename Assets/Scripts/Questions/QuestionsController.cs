@@ -9,7 +9,6 @@ using UnityEngine.LowLevel;
 
 public class QuestionsController : MonoBehaviour
 {
-    public GameMaster gameMaster;
     public GameObject questionCanvas;
     private List<Questions> questions = new List<Questions>();
     public TMP_Text questionText;
@@ -24,6 +23,8 @@ public class QuestionsController : MonoBehaviour
 
     private Questions currentQuestion;
     private string playerAnswer;
+    
+    private IGameController gameController;
     
     public static QuestionsController Instance { get; private set; }
 
@@ -81,6 +82,11 @@ public class QuestionsController : MonoBehaviour
 
         yield return playerAnswer;
     }
+    
+    public void SetGameController(IGameController controller)
+    {
+        gameController = controller;
+    }
 
     private void OnAnswerButtonClick(Button clickedButton)
     {
@@ -136,7 +142,8 @@ public class QuestionsController : MonoBehaviour
         if (isCorrect)
         {
             // Move the player piece here while the board is displayed
-            gameMaster.playerPieces[gameMaster.currentPlayerIndex].MovePiece(currentQuestion.steps);
+            //gameMaster.playerPieces[gameMaster.currentPlayerIndex].MovePiece(currentQuestion.steps);
+            gameController.MovePlayerPiece(-1, currentQuestion.steps);
 
         }
 
@@ -147,7 +154,8 @@ public class QuestionsController : MonoBehaviour
         
 
         // After UI updated en the turn
-        gameMaster.EndTurn();
+        //gameMaster.EndTurn();
+        gameController.EndTurn();
     }
 
     private void UpdateAnswerButtons(string[] answers)

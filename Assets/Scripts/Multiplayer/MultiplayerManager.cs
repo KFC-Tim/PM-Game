@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System;
 using System.Collections;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using UnityEngine.SceneManagement;
 using static MultiplayerManager;
 
@@ -40,6 +41,11 @@ public class MultiplayerManager : MonoBehaviour
         {
             Instance = null;
         }
+    }
+
+    public static MultiplayerManager GetInstance()
+    {
+        return Instance;
     }
 
     async void ConnectToServer()
@@ -126,7 +132,9 @@ public class MultiplayerManager : MonoBehaviour
     public void SwitchToGameScene()
     {
         _isReady = false;
-        StartCoroutine(LoadGameScene());
+        SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
+        OnGameSceneLoaded();
+        //StartCoroutine(LoadGameScene());
     }
 
     public void StartGame()
@@ -141,53 +149,10 @@ public class MultiplayerManager : MonoBehaviour
         return _playerCount;
     }
 
-    private IEnumerator LoadGameScene()
-    {
-        Debug.Log("Scene-Loading Started");
-        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync("GameScene");
-        asyncLoad.allowSceneActivation = false;
-
-        while (!asyncLoad.isDone ) // && asyncLoad.progress < 0.9f
-        {
-            float progress = Mathf.Clamp01(asyncLoad.progress / 0.9f); // Normalize progress
-            Debug.Log("Loading progress: " + (progress * 100f).ToString("F0") + "%");
-            
-            if (asyncLoad.isDone && asyncLoad.progress == 0)
-            {
-                Debug.LogError("Error: Scene loading stuck at 0 progress.");
-                yield break;
-            }
-            
-            //if (asyncLoad.progress >= 0.9f)
-            //{
-            //    asyncLoad.allowSceneActivation = true;
-                
-            //}
-
-            //Debug.Log("Loading progress: " + asyncLoad.progress); 
-            
-        }
-        yield return new WaitForEndOfFrame();
-        //while(!allowLoading) {
-        //    yield return null;
-        //}
-
-        asyncLoad.allowSceneActivation = true;
-
-        // Wait until the scene has fully loaded
-        while (!asyncLoad.isDone)
-        {
-            yield return null;
-        }
-
-        Debug.Log("Scene-Loading Ended");
-        OnGameSceneLoaded();
-    }
-
     private void OnGameSceneLoaded()
     {
         Debug.Log("GameScene is loaded completely.");
-        StartCoroutine(SetGameMasterWhenReady());
+        //StartCoroutine(SetGameMasterWhenReady());
     }
 
     private void LoadQueues()
@@ -260,7 +225,11 @@ public class MultiplayerManager : MonoBehaviour
                 UpdateGameState(data);
                 break;
             case "question":
+                Debug.Log("Question!");
                 DisplayQuestion(data.questionData);
+                break;
+            case "game_end":
+                Debug.Log("Game End!");
                 break;
             case "error":
                 Debug.LogError("Error: " + data.message);
@@ -273,22 +242,30 @@ public class MultiplayerManager : MonoBehaviour
 
     private IEnumerator SetGameMasterWhenReady()
     {
-        yield return new WaitForEndOfFrame();
-    
-        GameObject gameMasterObj = GameObject.FindWithTag("GameMaster");
-        if(gameMasterObj == null)
+        while (!CrossSceneInformation.GameMasterLoaded)
         {
-            Debug.LogError("Could not find GameMaster in scene!!");
-            yield break;
+            Debug.Log("Waiting for GameMaster to be loaded...");
+            yield return new WaitForSeconds(1.0f);
         }
-    
-        _gameMasterScript = gameMasterObj.GetComponent<GameMaster>();
-        if (_gameMasterScript == null)
-        {
-            Debug.LogError("GameMaster component not found on GameMaster object!!");
-            yield break;
+        Debug.Log("Game Master initialized");
+        
+        _gameMasterScript = CrossSceneInformation.GameMasterInstance;
+        if (_gameMasterScript != null)
+        { 
+            _isReady = true;
+            LoadQueues();
+            Debug.Log("GameMaster is set and queues are loaded.");
         }
+        else
+        { 
+            Debug.LogError("GameMaster component not found on GameMaster object after initialization.");
+        }
+        
+    }
 
+    public void SetGameMaster(GameMaster gameMaster)
+    {
+        _gameMasterScript = gameMaster;
         _isReady = true;
         LoadQueues();
         Debug.Log("GameMaster is set and queues are loaded.");
@@ -375,6 +352,11 @@ public class MultiplayerManager : MonoBehaviour
         Debug.Log("Current Turn: " + data.state.currentTurn);
     }
 
+    private void GameEnd(string winner)
+    {
+        Debug.Log("Winner is "+ winner);
+    }
+
 
     private class AnswerMessage
     {
@@ -390,20 +372,26 @@ public class MultiplayerManager : MonoBehaviour
             Debug.Log("Question queued");
             return;
         }
-        _gameMasterScript.AnswerQuestion(questionData);
-        Debug.Log("Question: " + questionData.question);
-        for (int i = 0; i < questionData.answers.Length; i++)
+
+        Debug.Log("Question will be shown now!");
+        try
         {
-            Debug.Log("Answer " + i + ": " + questionData.answers[i]);
+            _gameMasterScript.AnswerQuestion(questionData, (answer) =>
+            {
+                Debug.Log("Received answer: " + answer);
+                var answerMessage = new AnswerMessage
+                {
+                    type = "answer",
+                    answer = answer 
+                };
+                SendMessageToServer(JsonUtility.ToJson(answerMessage));
+            });
         }
-
-
-        var answerMessage = new AnswerMessage
+        catch (Exception e)
         {
-            type = "answer",
-            answer = questionData.answers[0] // Choose the first answer
-        };
-        SendMessageToServer(JsonUtility.ToJson(answerMessage));
+            Debug.LogError(e);
+            throw;
+        }
     }
 
     private async void OnApplicationQuit()
