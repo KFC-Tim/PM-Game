@@ -48,7 +48,7 @@ function handleMessage(ws, msg) {
         case 'start':
             handleStartGame(ws, msg.gameId);
             break;
-        case 'answer': // Add case for handling 'answer' type
+        case 'answer':
             handleAnswer(ws, msg);
             break;
         default:
@@ -63,8 +63,15 @@ function handleStartGame(ws, gameId) {
         ws.send(JSON.stringify({ type: 'error', message: 'Game not found' }));
         return;
     }
-    ws.send(JSON.stringify({ type: 'start', message: 'Game started' }));
-    console.log("Game started: " + gameId)
+
+    const game = games[gameId];
+    if (game) {
+        game.players.forEach(player => {
+            players[player.uuid].ws.send(JSON.stringify({ type: 'start', message: 'Game started' }));
+        });
+    }
+
+    console.log("Game started: " + gameId);
     gameMaster(gameId);
 }
 
@@ -74,7 +81,7 @@ function handleCreateGame(ws, playerName) {
         players: [],
         currentTurn: 0,
         scores: {},
-        usedQuestions: [] // Initialize usedQuestions array
+        usedQuestions: []
     };
     handleJoinGame(ws, playerName, gameId);
     ws.send(JSON.stringify({ type: 'gameCreated', gameId }));
@@ -118,11 +125,17 @@ function broadcastGameState(gameId) {
 }
 
 function generateGameId() {
-    return 'game-' + Math.random().toString(36).substr(2, 9);
+    const chars = '0123456789abcdefghijklmnopqrstuvwxyz';
+    let id = '';
+    for (let i = 0; i < 4; i++) {
+        const randomIndex = Math.floor(Math.random() * chars.length);
+        id += chars[randomIndex];
+    }
+    return id;
 }
 
 function generatePlayerId() {
-    return 'player-' + Math.random().toString(36).substr(2, 9);
+    return 'player-' + Math.random().toString(9).substr(2, 9);
 }
 
 function removePlayerFromGames(ws) {
@@ -158,36 +171,26 @@ function gameMaster(gameId) {
         return;
     }
 
-    // Check if the current player is still connected
     const currentPlayer = game.players[game.currentTurn];
     if (!currentPlayer || !players[currentPlayer.uuid] || players[currentPlayer.uuid].ws.readyState !== WebSocket.OPEN) {
-        // If the current player is not connected, advance the turn
         game.currentTurn = (game.currentTurn + 1) % game.players.length;
-        // Recursive call to handle the next player
-        gameMaster(gameId);
+        setTimeout(() => gameMaster(gameId), 100);
         return;
     }
 
     const currentPlayerId = currentPlayer.uuid;
-    const currentPlayerName = currentPlayer.name;
-
-    // Check if all questions have been used
     if (game.usedQuestions.length === questionscount) {
-        // Reset usedQuestions array
         game.usedQuestions = [];
     }
 
-    // Get a random question that has not been used
     let randomIndex;
     let question;
     do {
         randomIndex = Math.floor(Math.random() * questionscount);
         question = questions[randomIndex];
     } while (game.usedQuestions.includes(randomIndex));
-    // Mark the question as used
     game.usedQuestions.push(randomIndex);
 
-    // Send the question to the current player
     const questionData = {
         question: question.questionText,
         answers: question.questionAnswers
@@ -198,9 +201,14 @@ function gameMaster(gameId) {
         questionData: questionData
     }));
 
-    // Handle response from the player
+    players[currentPlayerId].ws.removeAllListeners('message');
     players[currentPlayerId].ws.once('message', (message) => {
-        handleAnswer(players[currentPlayerId].ws, JSON.parse(message));
+        const parsedMessage = JSON.parse(message);
+        if (parsedMessage.type === 'answer') {
+            handleAnswer(players[currentPlayerId].ws, parsedMessage);
+        } else {
+            console.warn("Unexpected message type:", parsedMessage.type);
+        }
     });
 }
 
@@ -210,30 +218,29 @@ function handleAnswer(ws, msg) {
         console.error("Player not found for given WebSocket");
         return;
     }
-    
+
     const gameId = players[playerId].gameId;
     const game = games[gameId];
     if (!game) {
         console.error("Game not found for player:", playerId);
         return;
     }
-    
+
     const questionIndex = game.usedQuestions[game.usedQuestions.length - 1];
     const question = questions[questionIndex];
-    
+
     const answer = msg.answer;
     const correctAnswer = question.correctAnswer;
     let points = 0;
-    
-    // Check if the answer is correct
+
     if (answer === correctAnswer) {
         points = question.steps;
         games[gameId].scores[playerId] += points;
     }
-    
+
     game.currentTurn = (game.currentTurn + 1) % game.players.length;
     broadcastGameState(gameId);
-    
+
     setTimeout(() => {
         gameMaster(gameId);
     }, 300);
