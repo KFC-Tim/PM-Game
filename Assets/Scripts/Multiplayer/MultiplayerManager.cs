@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using UnityEngine.SceneManagement;
 using static MultiplayerManager;
-using Newtonsoft.Json; 
+using Newtonsoft.Json;
 
 public class MultiplayerManager : MonoBehaviour
 {
@@ -117,8 +117,7 @@ public class MultiplayerManager : MonoBehaviour
         };
         var settings = new JsonSerializerSettings
         {
-            TypeNameHandling = TypeNameHandling.Auto,
-            ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor
+            TypeNameHandling = TypeNameHandling.Auto
         };
         Debug.Log("Serializing JSON CreateGame message");
         SendMessageToServer(JsonConvert.SerializeObject(createMessage, settings));
@@ -141,8 +140,7 @@ public class MultiplayerManager : MonoBehaviour
         };
         var settings = new JsonSerializerSettings
         {
-            TypeNameHandling = TypeNameHandling.Auto,
-            ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor
+            TypeNameHandling = TypeNameHandling.Auto
         };
         
         SendMessageToServer(JsonConvert.SerializeObject(joinMessage, settings));
