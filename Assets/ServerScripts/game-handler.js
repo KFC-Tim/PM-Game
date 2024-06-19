@@ -1,5 +1,7 @@
 const WebSocket = require('ws');
+const https = require('https');
 const fs = require('fs');
+const path = require('path');
 
 const questionscount = 2;
 
@@ -13,7 +15,17 @@ fs.readFile('questions.json', 'utf8', (err, data) => {
     questions = JSON.parse(data).questions;
 });
 
-const wss = new WebSocket.Server({ port: 8080 });
+// SSL certificate files
+const sslOptions = {
+    key: fs.readFileSync('/etc/letsencrypt/live/manager-rumble.de/privkey.pem'),
+    cert: fs.readFileSync('/etc/letsencrypt/live/manager-rumble.de/fullchain.pem')
+};
+
+// Create an HTTPS server
+const server = https.createServer(sslOptions);
+
+// Create a WebSocket server and attach it to the HTTPS server
+const wss = new WebSocket.Server({ server });
 
 let games = {};
 let players = {};
@@ -63,14 +75,7 @@ function handleStartGame(ws, gameId) {
         ws.send(JSON.stringify({ type: 'error', message: 'Game not found' }));
         return;
     }
-
-    const game = games[gameId];
-    if (game) {
-        game.players.forEach(player => {
-            players[player.uuid].ws.send(JSON.stringify({ type: 'start', message: 'Game started' }));
-        });
-    }
-
+    ws.send(JSON.stringify({ type: 'start', message: 'Game started' }));
     console.log("Game started: " + gameId);
     gameMaster(gameId);
 }
@@ -125,13 +130,7 @@ function broadcastGameState(gameId) {
 }
 
 function generateGameId() {
-    const chars = '0123456789abcdefghijklmnopqrstuvwxyz';
-    let id = '';
-    for (let i = 0; i < 4; i++) {
-        const randomIndex = Math.floor(Math.random() * chars.length);
-        id += chars[randomIndex];
-    }
-    return id;
+    return Math.random().toString(9).substr(2, 9);
 }
 
 function generatePlayerId() {
@@ -247,5 +246,5 @@ function handleAnswer(ws, msg) {
 }
 
 console.log("----------------------------------------");
-console.log("Server is running on ws://localhost:8080");
+console.log("Server is running on https://forschungsprojekt-ki.de:8080");
 console.log("----------------------------------------");
