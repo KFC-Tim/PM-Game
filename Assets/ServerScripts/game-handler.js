@@ -1,5 +1,12 @@
 const WebSocket = require('ws');
 const fs = require('fs');
+const https = require('https');
+
+// SSL certificate files
+const sslOptions = {
+    key: fs.readFileSync('/etc/letsencrypt/live/manager-rumble.de/privkey.pem'),
+    cert: fs.readFileSync('/etc/letsencrypt/live/manager-rumble.de/fullchain.pem')
+};
 
 const questionscount = 2;
 
@@ -13,7 +20,11 @@ fs.readFile('questions.json', 'utf8', (err, data) => {
     questions = JSON.parse(data).questions;
 });
 
-const wss = new WebSocket.Server({ port: 8080 });
+// Create an HTTPS server
+const httpsServer = https.createServer(sslOptions);
+
+// Create WebSocket server and bind it to the HTTPS server
+const wss = new WebSocket.Server({ server: httpsServer });
 
 let games = {};
 let players = {};
@@ -246,6 +257,9 @@ function handleAnswer(ws, msg) {
     }, 300);
 }
 
-console.log("----------------------------------------");
-console.log("Server is running on ws://localhost:8080");
-console.log("----------------------------------------");
+// Start the HTTPS server
+httpsServer.listen(8080, () => {
+    console.log("----------------------------------------");
+    console.log("Server is running on wss://manager-rumble.de:8080");
+    console.log("----------------------------------------");
+});
