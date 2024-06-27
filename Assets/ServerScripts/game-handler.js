@@ -8,6 +8,8 @@ const sslOptions = {
     cert: fs.readFileSync('/etc/letsencrypt/live/manager-rumble.de/fullchain.pem')
 };
 
+questionscount = 100;
+
 // Read questions from JSON file
 let questions = [];
 fs.readFile('questions.json', 'utf8', (err, data) => {
@@ -16,6 +18,7 @@ fs.readFile('questions.json', 'utf8', (err, data) => {
         return;
     }
     questions = JSON.parse(data).questions;
+    questionscount = questions.length;
 });
 
 // Create an HTTPS server
@@ -195,7 +198,7 @@ function gameMaster(gameId) {
     let randomIndex;
     let question;
     do {
-        randomIndex = Math.floor(Math.random() * questions.length);
+        randomIndex = Math.floor(Math.random() * questionscount);
         question = questions[randomIndex];
     } while (game.usedQuestions.includes(randomIndex));
     game.usedQuestions.push(randomIndex);
