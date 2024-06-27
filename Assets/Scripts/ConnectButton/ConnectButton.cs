@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections; 
@@ -25,7 +26,11 @@ public class ConnectButton : MonoBehaviour
         {
             connectButton.onClick.AddListener(OnConnectClicked);
         }
+
+        CrossSceneInformation.MultiplayerManager = multiplayerManager;
     }
+
+    
 
     private void OnConnectClicked()
     {

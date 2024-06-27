@@ -18214,6 +18214,9 @@ MonoBehaviour:
   answerButtonText2: {fileID: 363568978}
   answerButtonText3: {fileID: 1452589024}
   answerButtonText4: {fileID: 41199362}
+  OnAnswerSubmitted:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!4 &910898785
 Transform:
   m_ObjectHideFlags: 0

@@ -10,7 +10,7 @@ public class FieldEvent
     // Start is called before the first frame update
     void Start()
     {
-        
+        Debug.Log("FieldEvent loaded!");
     }
 
     public FieldEvent(string eventType = "SkipQuestion", bool storable = false)

@@ -3,45 +3,69 @@ using NativeWebSocket;
 using System.Text;
 using System.Collections.Generic;
 using System;
+using System.Linq;
 using UnityEngine.SceneManagement;
-using static MultiplayerManager;
+using MiniJSON;
 
 public class MultiplayerManager : MonoBehaviour
 {
     private WebSocket websocket;
-    private ClientGameState gameState;
+    private ClientGameState _gameState = new ClientGameState();
+    private GameMaster _gameMasterScript;
+    private List<GameState> _gameDataQueue = new List<GameState>();
+    private List<QuestionData> _questionDataQueue = new List<QuestionData>();
+    private int _playerCount = 0;
+    private bool _isReady = true;
+    private static MultiplayerManager Instance;
 
     void Start()
     {
-        gameState = new ClientGameState();
+        _gameState = new ClientGameState();
         ConnectToServer();
+    }
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(this);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
+    }
+
+    public static MultiplayerManager GetInstance() => Instance;
+
+    public string GetGameId()
+    {
+        if (_gameState == null)
+        {
+            Debug.LogError("GameState is not set in MultiplayerManager");
+            return "ERROR";
+        }
+        return _gameState.GameId;
     }
 
     async void ConnectToServer()
     {
-        websocket = new WebSocket("ws://87.106.165.86:8080");
+        websocket = new WebSocket("wss://manager-rumble.de:8080");
 
-        websocket.OnOpen += () =>
-        {
-            Debug.Log("Connected to the Server!");
-        };
-
-        websocket.OnError += (e) =>
-        {
-            Debug.LogError("Error: " + e);
-        };
-
+        websocket.OnOpen += () => Debug.Log("Connected to the Server!");
+        websocket.OnError += (e) => Debug.LogError("Error: " + e);
         websocket.OnClose += (e) =>
         {
             Debug.Log("Disconnected from the Server");
             SwitchToMenuScene();
         };
 
-        websocket.OnMessage += (bytes) =>
-        {
-            var message = Encoding.UTF8.GetString(bytes);
-            OnMessageReceived(message);
-        };
+        websocket.OnMessage += (bytes) => OnMessageReceived(Encoding.UTF8.GetString(bytes));
 
         await websocket.Connect();
     }
@@ -53,11 +77,9 @@ public class MultiplayerManager : MonoBehaviour
 #endif
     }
 
-    public void SwitchToMenuScene()
-    {
-        SceneManager.LoadScene("MenuScene");
-    }
+    public void SwitchToMenuScene() => SceneManager.LoadScene("MenuScene");
 
+    [Serializable]
     public class CreateMessage
     {
         public string type;
@@ -66,34 +88,77 @@ public class MultiplayerManager : MonoBehaviour
 
     public void CreateGame(string newPlayerName)
     {
-        var createMessage = new CreateMessage
-        {
-            type = "create",
-            playerName = newPlayerName
-        };
+        var createMessage = new CreateMessage { type = "create", playerName = newPlayerName };
+        Debug.Log("Serializing JSON CreateGame message");
         SendMessageToServer(JsonUtility.ToJson(createMessage));
     }
 
+    [Serializable]
     public class JoinMessage
     {
         public string type;
         public string playerName;
         public string gameId;
     }
+
     public void JoinGame(string newGameId, string newPlayerName)
     {
-        var joinMessage = new JoinMessage
-        {
-            type = "join",
-            playerName = newPlayerName,
-            gameId = newGameId
-        };
+        _gameDataQueue.Clear();
+        var joinMessage = new JoinMessage { type = "join", playerName = newPlayerName, gameId = newGameId };
         SendMessageToServer(JsonUtility.ToJson(joinMessage));
+    }
+
+    public void SwitchToLobbyScene()
+    {
+        _isReady = false;
+        SceneManager.LoadSceneAsync("LobbyScene");
     }
 
     public void SwitchToGameScene()
     {
-        SceneManager.LoadScene("GameScene");
+        _isReady = false;
+        SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
+        OnGameSceneLoaded();
+    }
+
+    public void StartGame()
+    {
+        SendMessageToServer($"{{\"type\": \"start\", \"gameId\": \"{_gameState.GameId}\"}}");
+        Debug.Log("Game Started");
+        SwitchToGameScene();
+    }
+
+    public int GetPlayerCount() => _playerCount;
+
+    private void OnGameSceneLoaded()
+    {
+        Debug.Log("GameScene is loaded completely.");
+    }
+
+    private void LoadQueues()
+    {
+        LoadGameDataQueue();
+        LoadQuestionDataQueue();
+        Debug.Log("Queues were loaded!");
+    }
+
+    private void LoadGameDataQueue()
+    {
+        foreach (var gameState in _gameDataQueue)
+        {
+            _gameMasterScript.UpdateGameState(gameState);
+            Debug.Log("Loading: " + JsonUtility.ToJson(gameState));
+        }
+        _gameDataQueue.Clear();
+    }
+
+    private void LoadQuestionDataQueue()
+    {
+        foreach (var question in _questionDataQueue)
+        {
+            DisplayQuestion(question);
+        }
+        _questionDataQueue.Clear();
     }
 
     async void SendMessageToServer(string message)
@@ -101,8 +166,7 @@ public class MultiplayerManager : MonoBehaviour
         if (websocket.State == WebSocketState.Open)
         {
             Debug.Log(message);
-            var bytes = Encoding.UTF8.GetBytes(message);
-            await websocket.Send(bytes);
+            await websocket.Send(Encoding.UTF8.GetBytes(message));
         }
         else
         {
@@ -112,33 +176,52 @@ public class MultiplayerManager : MonoBehaviour
 
     void OnMessageReceived(string message)
     {
-        Debug.Log("Received message: " + message); // Log the received message for debugging
-        var data = JsonUtility.FromJson<ServerMessage>(message);
-        // Additional logging to inspect the deserialized data
-        Debug.Log("Deserialized ServerMessage: " + JsonUtility.ToJson(data));
-
-        if (data == null || string.IsNullOrEmpty(data.type))
+        Debug.Log("Received message: " + message);
+        ServerMessage data;
+        try
         {
-            Debug.LogWarning("Received message with undefined or null type.");
+            data = DeserializeServerMessage(message);
+            if (data == null)
+            {
+                Debug.LogWarning("Deserialization resulted in a null object.");
+                return;
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(e);
             return;
         }
 
-        // Handle the message based on its type
+        if (string.IsNullOrEmpty(data.type))
+        {
+            Debug.LogWarning("Received message with undefined type.");
+            return;
+        }
+
         switch (data.type)
         {
             case "gameCreated":
                 Debug.Log("Game created!");
-                SwitchToGameScene();
+                SwitchToLobbyScene();
                 break;
             case "joined":
                 HandleJoinGame(data);
-                SwitchToGameScene();
+                SwitchToLobbyScene();
                 break;
             case "update":
                 UpdateGameState(data);
                 break;
             case "question":
+                Debug.Log("Question!");
                 DisplayQuestion(data.questionData);
+                break;
+            case "game_end":
+                Debug.Log("Game End!");
+                break;
+            case "start":
+                Debug.Log("Game Starts!");
+                GameStarts();
                 break;
             case "error":
                 Debug.LogError("Error: " + data.message);
@@ -149,67 +232,111 @@ public class MultiplayerManager : MonoBehaviour
         }
     }
 
+    private ServerMessage DeserializeServerMessage(string json)
+    {
+        Debug.Log("Received JSON: " + json);
+        ServerMessage serverMessage = null;
+
+        try
+        {
+            serverMessage = JsonUtility.FromJson<ServerMessage>(json);
+            var jsonObject = Json.Deserialize(json) as Dictionary<string, object>;
+            if (jsonObject != null && jsonObject.ContainsKey("state"))
+            {
+                var stateObject = jsonObject["state"] as Dictionary<string, object>;
+                if (stateObject != null && stateObject.ContainsKey("scores"))
+                {
+                    var scoresObject = stateObject["scores"] as Dictionary<string, object>;
+                    if (scoresObject != null)
+                    {
+                        var scores = scoresObject.ToDictionary(kvp => kvp.Key, kvp => Convert.ToInt32(kvp.Value));
+                        serverMessage.state.scores = scores;
+
+                        foreach (var score in serverMessage.state.scores)
+                        {
+                            Debug.Log($"Player: {score.Key}, Score: {score.Value}");
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogError("Failed to deserialize scores");
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError("Exception during deserialization: " + ex.Message);
+            Debug.LogError("StackTrace: " + ex.StackTrace);
+        }
+
+        if (serverMessage == null)
+        {
+            Debug.LogError("Deserialization of ServerMessage failed.");
+        }
+        return serverMessage;
+    }
+
+    private void GameStarts() => SwitchToGameScene();
+
+    public void SetGameMaster(GameMaster gameMaster)
+    {
+        _gameMasterScript = gameMaster;
+        _isReady = true;
+        LoadQueues();
+        Debug.Log("GameMaster is set and queues are loaded.");
+    }
 
     private void UpdateGameState(ServerMessage data)
     {
-        if (data == null)
+        if (data?.state == null || data.state.scores == null)
         {
-            Debug.LogError("ServerMessage data is null");
+            Debug.LogError("Invalid ServerMessage or missing scores");
             return;
         }
 
-        gameState.GameState = data.state;
+        if (!_isReady)
+        {
+            _gameDataQueue.Add(data.state);
+            return;
+        }
+
+        _playerCount = data.state.scores.Count;
+        _gameState.GameState = data.state;
+        Debug.Log(_gameState);
+        Debug.Log("GameState: " + JsonUtility.ToJson(_gameState.GameState));
+        _gameMasterScript.UpdateGameState(_gameState.GameState);
     }
 
     private void HandleJoinGame(ServerMessage data)
     {
-        if (data == null)
-        {
-            Debug.LogError("ServerMessage data is null");
-            return;
-        }
+        _gameState.GameId = data.gameId;
+        _gameState.GameState = data.state ?? new GameState();
+        _gameState.GameState.players ??= new List<Player>();
+        _gameState.GameState.scores ??= new Dictionary<string, int>();
 
-        if (data.state == null)
-        {
-            Debug.LogError("GameState in ServerMessage is null");
-            return;
-        }
+        _playerCount = data.playerNumber;
 
-        // Initialize the players list if it is null
-        if (data.state.players == null)
+        Debug.Log("Joined Game: " + _gameState.GameId);
+        foreach (var player in _gameState.GameState.players)
         {
-            data.state.players = new List<Player>();
-        }
-
-        // Initialize the scores dictionary if it is null
-        if (data.state.scores == null)
-        {
-            data.state.scores = new Dictionary<string, int>();
-        }
-
-        gameState.GameId = data.gameId;
-        gameState.GameState = data.state;
-
-        Debug.Log("Joined Game: " + gameState.GameId);
-        foreach (var player in data.state.players)
-        {
-            if (player == null)
-            {
-                Debug.LogError("Player is null in players list");
-                continue;
-            }
             Debug.Log("Player UUID: " + player.uuid + ", Name: " + player.name);
         }
 
-        foreach (var score in data.state.scores)
+        foreach (var score in _gameState.GameState.scores)
         {
             Debug.Log("Player UUID: " + score.Key + ", Score: " + score.Value);
         }
 
-        Debug.Log("Current Turn: " + data.state.currentTurn);
+        Debug.Log("Current Turn: " + _gameState.GameState.currentTurn);
     }
 
+    private void GameEnd(string winner)
+    {
+        Debug.Log("Winner is " + winner);
+    }
 
+    [Serializable]
     private class AnswerMessage
     {
         public string type;
@@ -218,27 +345,40 @@ public class MultiplayerManager : MonoBehaviour
 
     private void DisplayQuestion(QuestionData questionData)
     {
-        Debug.Log("Question: " + questionData.question);
-        for (int i = 0; i < questionData.answers.Length; i++)
+        if (!_isReady)
         {
-            Debug.Log("Answer " + i + ": " + questionData.answers[i]);
+            _questionDataQueue.Add(questionData);
+            Debug.Log("Question queued");
+            return;
         }
 
-
-        var answerMessage = new AnswerMessage
+        Debug.Log("Question will be shown now!");
+        try
         {
-            type = "answer",
-            answer = questionData.answers[0] // Choose the first answer
-        };
-        SendMessageToServer(JsonUtility.ToJson(answerMessage));
+            _gameMasterScript.AnswerQuestion(questionData, (answer) =>
+            {
+                Debug.Log("Received answer: " + answer);
+                var answerMessage = new AnswerMessage { type = "answer", answer = answer };
+                SendMessageToServer(JsonUtility.ToJson(answerMessage));
+            });
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(e);
+            throw;
+        }
     }
 
     private async void OnApplicationQuit()
     {
-        await websocket.Close();
+        if (websocket != null)
+        {
+            await websocket.Close();
+            websocket = null;
+        }
     }
 
-    [System.Serializable]
+    [Serializable]
     public class ServerMessage
     {
         public string type;
@@ -246,9 +386,10 @@ public class MultiplayerManager : MonoBehaviour
         public GameState state;
         public string message;
         public QuestionData questionData;
+        public int playerNumber;
     }
 
-    [System.Serializable]
+    [Serializable]
     public class GameState
     {
         public List<Player> players;
@@ -256,7 +397,7 @@ public class MultiplayerManager : MonoBehaviour
         public Dictionary<string, int> scores;
     }
 
-    [System.Serializable]
+    [Serializable]
     public class Player
     {
         public string uuid;
@@ -264,7 +405,7 @@ public class MultiplayerManager : MonoBehaviour
         public int playerPosition;
     }
 
-    [System.Serializable]
+    [Serializable]
     public class QuestionData
     {
         public string question;

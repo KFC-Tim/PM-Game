@@ -7,16 +7,16 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
 
-public class GameMaster : MonoBehaviour
+public class GameMaster : MonoBehaviour, IGameController
 {
     public InventoryManager inventoryManager;
     [SerializeField] private QuestionsController questionsController;
     public FieldEventController fieldEventController;
 
     [SerializeField] private GameObject[] playerPiecePrefabs = new GameObject[4];
-    public PlayerPiece[] playerPieces;
+    public List<PlayerPiece> playerPieces;
     public int[] playerRounds = new int[4];
-
+    
 
     [SerializeField] private Board board;
 
@@ -28,23 +28,40 @@ public class GameMaster : MonoBehaviour
     private bool[] skipQuestion = {false, false, false, false};
     private bool hasSelected = false;
 
+    public static GameMaster Instance { get; private set; }
 
 
     // Start is called before the first frame update
     void Start()
     {
+        Debug.Log("GameMaster started!!");
+        CrossSceneInformation.SetGameMasterLoaded(true);
+        CrossSceneInformation.SetGameMasterInstance(this);
+        InitializePlayerPieces();
+        questionsController.SetGameController(this);
+        
         if(board == null){
             Debug.Log("Board component not foun in the scene");
             return;
         }
 
-        InitializePlayerPieces();
+        //InitializePlayerPieces();
 
         // maybe here the random or by join the lobby
         currentPlayerIndex = 0;
         gameIsOver = false;
-
-        
+    }
+    
+    void Awake() 
+    { 
+        if (Instance != null && Instance != this) 
+        { 
+            Destroy(this); 
+        } 
+        else 
+        { 
+            Instance = this; 
+        } 
     }
 
     public void StartGame(int totalPlayers)
@@ -54,6 +71,152 @@ public class GameMaster : MonoBehaviour
         
         // Starts the game
         AtTurn();
+    }
+
+    public void UpdateGameState(MultiplayerManager.GameState gameState)
+    {
+        int i = 0;
+        Debug.Log("Updating Game State");
+        if (playerPieces == null)
+        {
+            Debug.LogError("Player Pieces is null!!");
+            return;
+        }
+        if (gameState == null)
+        {
+            Debug.LogError("GameState is null");
+            return;
+        }
+
+        if (gameState.scores == null)
+        {
+            Debug.LogError("GameStates Scoreboard is null");
+            return;
+        }
+        
+        if (gameState.players == null)
+        {
+            Debug.LogError("GameStates Players is null");
+            return;
+        }
+        
+        Debug.Log(playerPieces.Count);
+        foreach (var player in gameState.players)
+        {
+            try
+            {
+                if (i > playerPieces.Count)
+                {
+                    Debug.Log("Creating new Player Piece");
+                    Vector3 offset = new Vector3(0, 0.35f, 0);
+                    Vector3 startPosition = GetStartPosition(i) + offset;
+                    GameObject pieceInstance = Instantiate(playerPiecePrefabs[i], startPosition, Quaternion.identity);
+
+                    // enabeling the mesh renderer
+                    MeshRenderer meshRenderer = pieceInstance.GetComponent<MeshRenderer>();
+                    if (meshRenderer != null)
+                    {
+                        meshRenderer.enabled = true;
+                    }
+
+                    playerPieces[i] = pieceInstance.GetComponent<PlayerPiece>();
+                    playerPieces[i].SetPath(GetBoardPathForTeam(i));
+                }
+
+                
+                
+                if (!gameState.scores.ContainsKey(player.uuid))
+                {
+                    Debug.LogError(player.uuid + " not in Scoreboard");
+                    continue;
+                }
+                playerPieces[i % totalPlayers].SetPosition(gameState.scores[player.uuid]);
+                Debug.Log("Set Player " + i + "'s position to: " + gameState.scores[player.uuid]);
+                ++i;
+                i %= 4;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e);
+            }
+        }
+    }
+
+    public void AnswerQuestion(MultiplayerManager.QuestionData questionData, Action<string> callback)
+    {
+        try
+        {
+            StartCoroutine(AnswerQuestionCoroutine(questionData, callback));
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(e);
+            throw;
+        }
+    }
+    
+    public IEnumerator AnswerQuestionCoroutine(MultiplayerManager.QuestionData questionData, Action<string> callback)
+    {
+        string answer = null;
+
+        yield return StartCoroutine(WaitForAnswer(questionData, (result) => answer = result));
+
+        callback(answer);
+    }
+
+    public void MovePlayerPiece(int playerindex, int steps)
+    {
+        if (playerindex >= 0 && playerindex < playerPieces.Count)
+        {
+            playerPieces[playerindex].MovePiece(steps);
+        }
+    }
+    
+    private IEnumerator WaitForAnswer(MultiplayerManager.QuestionData questionData, System.Action<string> callback)
+    {
+        Questions question = ConvertToQuestion(questionData);
+        IEnumerator askQuestionCoroutine = questionsController.AskQuestion(question);
+        yield return StartCoroutine(askQuestionCoroutine);
+
+        string playerAnswer = askQuestionCoroutine.Current as string;
+        callback(playerAnswer);
+    }
+
+    private IEnumerator AskQuestion(MultiplayerManager.QuestionData questionData)
+    {
+        IEnumerator askQuestionCoroutine;
+        try
+        {
+            Questions question = ConvertToQuestion(questionData);
+            askQuestionCoroutine = questionsController.AskQuestion(question);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(e);
+            throw;
+        }
+        
+        yield return StartCoroutine(askQuestionCoroutine);
+
+        string playerAnswer = askQuestionCoroutine.Current as string;
+    }
+
+    private Questions ConvertToQuestion(MultiplayerManager.QuestionData questionData)
+    {
+        Questions q;
+        try
+        {
+            string qText = questionData.question;
+            string[] qAnswers = questionData.answers;
+            q = new Questions(qText, qAnswers, " ", 2, 2);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(e);
+            throw;
+        }
+
+        return q;
     }
     
     // Called if a player is at the turn    
@@ -68,58 +231,18 @@ public class GameMaster : MonoBehaviour
             inventoryManager.ClearCurrentEvent(currentPlayerIndex);
         }
         
-        
-        if (gameIsOver)
-        {
-            // TODO change scene
-            Debug.Log("Game is over. No more turns.");
-            return;
-        }
-        //TODO implement EndTurn when SkipQuestion is true
-        if (!skipQuestion[currentPlayerIndex])
-        {
-            questionsController.AskQuestion();
-        }
-        else
-        {
-            EndTurn();
-        }
         skipQuestion[currentPlayerIndex] = false;
+    }
 
-        // TODO move by qutetions steps
-        GameObject currPositionGameObj = playerPieces[currentPlayerIndex].GetGameObjectPosition();
-        Field currField = currPositionGameObj.GetComponent<Field>();
-
-        if (!currField.IsUnityNull() && currField.IsEventField)
-        {
-            GetFieldEvent(currentPlayerIndex);
-        }
+    public void EndGame(string winner)
+    {
+        //TODO implement winning message
     }
 
     // Called at the end of a turn
     public void EndTurn()
     {
-        if (CheckForWin())
-        {
-            Debug.Log("Player " +  (currentPlayerIndex + 1)  +  " wins!");
-            gameIsOver = true;
-            // Return to WinningSequence;
-            return;
-        }
-        if (!gameIsOver)
-        {
-            currentPlayerIndex = (currentPlayerIndex + 1) % totalPlayers;
-            Debug.Log("Player " + (currentPlayerIndex + 1) + "'s turn.");
-            AtTurn();
-        }
-        if (gameIsOver)
-        {      
-            Debug.Log("Game is over. No more turns.");
-            // Return to EndSequence
-            return;
-        }
         
-
     }
 
     /* Color parseHexColor(string hexColor){
@@ -167,12 +290,11 @@ public class GameMaster : MonoBehaviour
     private void InitializePlayerPieces()
     {
 
-        playerPieces = new PlayerPiece[totalPlayers];
+        playerPieces = new List<PlayerPiece>();
         Vector3 offset = new Vector3(0, 0.35f, 0); // Move 1 unit higher on the y-axis
 
         for (int team = 0; team < totalPlayers; team++)
         {
-
                 Vector3 startPosition = GetStartPosition(team) + offset;
                 GameObject pieceInstance = Instantiate(playerPiecePrefabs[team], startPosition, Quaternion.identity);
 
@@ -183,10 +305,10 @@ public class GameMaster : MonoBehaviour
                     meshRenderer.enabled = true;
                 }
 
-                playerPieces[team] = pieceInstance.GetComponent<PlayerPiece>();
+                playerPieces.Add(pieceInstance.GetComponent<PlayerPiece>());
                 playerPieces[team].SetPath(GetBoardPathForTeam(team));
-            
         }
+        Debug.Log("Player Pieces initialized!");
     }
 
     private Vector3 GetStartPosition(int team)

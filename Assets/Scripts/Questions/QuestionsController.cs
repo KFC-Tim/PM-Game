@@ -4,10 +4,11 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.Events;
+using UnityEngine.LowLevel;
 
 public class QuestionsController : MonoBehaviour
 {
-    public GameMaster gameMaster;
     public GameObject questionCanvas;
     private List<Questions> questions = new List<Questions>();
     public TMP_Text questionText;
@@ -21,35 +22,82 @@ public class QuestionsController : MonoBehaviour
     public TMP_Text answerButtonText4;
 
     private Questions currentQuestion;
+    private string playerAnswer;
+    
+    private IGameController gameController;
+    
+    public static QuestionsController Instance { get; private set; }
+
+    [System.Serializable]
+    public class AnswerEvent : UnityEvent<string> { };
+
+    public AnswerEvent OnAnswerSubmitted;
 
     // Start is called before the first frame update
     void Start()
     {
+        Debug.Log("QuestionsController started!");
+        
         questions.Add(new Questions("Test1", new string[] {"A", "B", "C", "D"}, "B", 2, 2));
         questions.Add(new Questions("Test2", new string[] {"1", "2", "3", "4"}, "2", 2, 2));
         questions.Add(new Questions("Test3", new string[] {"K", "B", "C", "D"}, "B", 2, 2));
         questions.Add(new Questions("Test4", new string[] {"f", "B", "C", "A"}, "A", 2, 2));
         questions.Add(new Questions("Test5", new string[] {"R", "B", "M", "D"}, "M", 2, 2));
 
-        answerButton1.onClick.AddListener(() => EvaluateAnswer(answerButton1));
-        answerButton2.onClick.AddListener(() => EvaluateAnswer(answerButton2));
-        answerButton3.onClick.AddListener(() => EvaluateAnswer(answerButton3));
-        answerButton4.onClick.AddListener(() => EvaluateAnswer(answerButton4));
+        answerButton1.onClick.AddListener(() => OnAnswerButtonClick(answerButton1));
+        answerButton2.onClick.AddListener(() => OnAnswerButtonClick(answerButton2));
+        answerButton3.onClick.AddListener(() => OnAnswerButtonClick(answerButton3));
+        answerButton4.onClick.AddListener(() => OnAnswerButtonClick(answerButton4));
+    }
+    
+    void Awake() 
+    { 
+        if (Instance != null && Instance != this) 
+        { 
+            Destroy(this); 
+        } 
+        else 
+        { 
+            Instance = this; 
+        } 
     }
 
-    public void AskQuestion()
+    public IEnumerator AskQuestion(Questions q)
     {
-        currentQuestion = questions[Random.Range(0, questions.Count)];
-        questionText.text = currentQuestion.questionText; 
-        UpdateAnswerButtons(currentQuestion.questionAnsers);
+        currentQuestion = q;
+        questionText.text = q.questionText; 
+        UpdateAnswerButtons(q.questionAnsers);
         ShowCanvas();
 
+        playerAnswer = null;
+        OnAnswerSubmitted.AddListener((answer) => playerAnswer = answer);
+
+        while (string.IsNullOrEmpty(playerAnswer))
+        {
+            yield return null;
+        }
+        
+        OnAnswerSubmitted.RemoveAllListeners();
+        HideCanvas();
+
+        yield return playerAnswer;
+    }
+    
+    public void SetGameController(IGameController controller)
+    {
+        gameController = controller;
     }
 
-    public void EvaluateAnswer(Button clickedButton)
-     {
-        string playerAnswer = clickedButton.GetComponentInChildren<TMP_Text>().text;
-        bool isCorrect = playerAnswer.ToLower() == currentQuestion.correctAnswer.ToLower();
+    private void OnAnswerButtonClick(Button clickedButton)
+    {
+        string answer = clickedButton.GetComponentInChildren<TMP_Text>().text;
+        OnAnswerSubmitted.Invoke(answer);
+        //EvaluateAnswer(answer, clickedButton);
+    }
+    
+    private void EvaluateAnswer(string answer, Button clickedButton)
+    {
+        bool isCorrect = answer.ToLower() == currentQuestion.correctAnswer.ToLower();
 
         if (isCorrect)
         {
@@ -64,7 +112,7 @@ public class QuestionsController : MonoBehaviour
             HighlightCorrectAnswer();
         }
 
-        StartCoroutine(WaitAndEndTurn(isCorrect));  
+        StartCoroutine(WaitAndEndTurn(isCorrect));
     }
 
     private void HighlightCorrectAnswer()
@@ -94,7 +142,8 @@ public class QuestionsController : MonoBehaviour
         if (isCorrect)
         {
             // Move the player piece here while the board is displayed
-            gameMaster.playerPieces[gameMaster.currentPlayerIndex].MovePiece(currentQuestion.steps);
+            //gameMaster.playerPieces[gameMaster.currentPlayerIndex].MovePiece(currentQuestion.steps);
+            gameController.MovePlayerPiece(-1, currentQuestion.steps);
 
         }
 
@@ -105,7 +154,8 @@ public class QuestionsController : MonoBehaviour
         
 
         // After UI updated en the turn
-        gameMaster.EndTurn();
+        //gameMaster.EndTurn();
+        gameController.EndTurn();
     }
 
     private void UpdateAnswerButtons(string[] answers)
