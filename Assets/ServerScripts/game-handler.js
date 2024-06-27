@@ -1,5 +1,12 @@
 const WebSocket = require('ws');
 const fs = require('fs');
+const https = require('https');
+
+// SSL certificate files
+const sslOptions = {
+    key: fs.readFileSync('/etc/letsencrypt/live/manager-rumble.de/privkey.pem'),
+    cert: fs.readFileSync('/etc/letsencrypt/live/manager-rumble.de/fullchain.pem')
+};
 
 const questionscount = 2;
 
@@ -13,7 +20,11 @@ fs.readFile('questions.json', 'utf8', (err, data) => {
     questions = JSON.parse(data).questions;
 });
 
-const wss = new WebSocket.Server({ port: 8080 });
+// Create an HTTPS server
+const httpsServer = https.createServer(sslOptions);
+
+// Create WebSocket server and bind it to the HTTPS server
+const wss = new WebSocket.Server({ server: httpsServer });
 
 let games = {};
 let players = {};
@@ -48,8 +59,12 @@ function handleMessage(ws, msg) {
         case 'start':
             handleStartGame(ws, msg.gameId);
             break;
+        case 'answer':
+            handleAnswer(ws, msg);
+            break;
         default:
             console.warn("Unhandled message type:", msg.type);
+            ws.send(JSON.stringify({ type: 'error', message: 'Unknown message type' }));
             break;
     }
 }
@@ -59,6 +74,15 @@ function handleStartGame(ws, gameId) {
         ws.send(JSON.stringify({ type: 'error', message: 'Game not found' }));
         return;
     }
+
+    const game = games[gameId];
+    if (game) {
+        game.players.forEach(player => {
+            players[player.uuid].ws.send(JSON.stringify({ type: 'start', message: 'Game started' }));
+        });
+    }
+
+    console.log("Game started: " + gameId);
     gameMaster(gameId);
 }
 
@@ -68,7 +92,7 @@ function handleCreateGame(ws, playerName) {
         players: [],
         currentTurn: 0,
         scores: {},
-        usedQuestions: [] // Initialize usedQuestions array
+        usedQuestions: []
     };
     handleJoinGame(ws, playerName, gameId);
     ws.send(JSON.stringify({ type: 'gameCreated', gameId }));
@@ -112,11 +136,17 @@ function broadcastGameState(gameId) {
 }
 
 function generateGameId() {
-    return 'game-' + Math.random().toString(36).substr(2, 9);
+    const chars = '0123456789abcdefghijklmnopqrstuvwxyz';
+    let id = '';
+    for (let i = 0; i < 4; i++) {
+        const randomIndex = Math.floor(Math.random() * chars.length);
+        id += chars[randomIndex];
+    }
+    return id;
 }
 
 function generatePlayerId() {
-    return 'player-' + Math.random().toString(36).substr(2, 9);
+    return 'player-' + Math.random().toString(9).substr(2, 9);
 }
 
 function removePlayerFromGames(ws) {
@@ -152,36 +182,26 @@ function gameMaster(gameId) {
         return;
     }
 
-    // Check if the current player is still connected
     const currentPlayer = game.players[game.currentTurn];
     if (!currentPlayer || !players[currentPlayer.uuid] || players[currentPlayer.uuid].ws.readyState !== WebSocket.OPEN) {
-        // If the current player is not connected, advance the turn
         game.currentTurn = (game.currentTurn + 1) % game.players.length;
-        // Recursive call to handle the next player
-        gameMaster(gameId);
+        setTimeout(() => gameMaster(gameId), 100);
         return;
     }
 
     const currentPlayerId = currentPlayer.uuid;
-    const currentPlayerName = currentPlayer.name;
-
-    // Check if all questions have been used
     if (game.usedQuestions.length === questionscount) {
-        // Reset usedQuestions array
         game.usedQuestions = [];
     }
 
-    // Get a random question that has not been used
     let randomIndex;
     let question;
     do {
         randomIndex = Math.floor(Math.random() * questionscount);
         question = questions[randomIndex];
     } while (game.usedQuestions.includes(randomIndex));
-    // Mark the question as used
     game.usedQuestions.push(randomIndex);
 
-    // Send the question to the current player
     const questionData = {
         question: question.questionText,
         answers: question.questionAnswers
@@ -192,38 +212,54 @@ function gameMaster(gameId) {
         questionData: questionData
     }));
 
-    // Handle response from the player
+    players[currentPlayerId].ws.removeAllListeners('message');
     players[currentPlayerId].ws.once('message', (message) => {
-        // Check again if the player is still connected
-        if (players[currentPlayerId].ws.readyState !== WebSocket.OPEN) {
-            // If the player disconnected during their turn, skip their turn
-            game.currentTurn = (game.currentTurn + 1) % game.players.length;
-            broadcastGameState(gameId);
-            setTimeout(() => {
-                gameMaster(gameId);
-            }, 300);
-            return;
+        const parsedMessage = JSON.parse(message);
+        if (parsedMessage.type === 'answer') {
+            handleAnswer(players[currentPlayerId].ws, parsedMessage);
+        } else {
+            console.warn("Unexpected message type:", parsedMessage.type);
         }
-
-        const answer = JSON.parse(message).answer;
-        const correctAnswer = question.correctAnswer;
-        let points = 0;
-
-        // Check if the answer is correct
-        if (answer === correctAnswer) {
-            points = question.steps;
-            games[gameId].scores[currentPlayerId] += points;
-        }
-
-        game.currentTurn = (game.currentTurn + 1) % game.players.length;
-        broadcastGameState(gameId);
-
-        setTimeout(() => {
-            gameMaster(gameId);
-        }, 300);
     });
 }
 
-console.log("----------------------------------------");
-console.log("Server is running on ws://localhost:8080");
-console.log("----------------------------------------");
+function handleAnswer(ws, msg) {
+    const playerId = Object.keys(players).find(id => players[id].ws === ws);
+    if (!playerId) {
+        console.error("Player not found for given WebSocket");
+        return;
+    }
+
+    const gameId = players[playerId].gameId;
+    const game = games[gameId];
+    if (!game) {
+        console.error("Game not found for player:", playerId);
+        return;
+    }
+
+    const questionIndex = game.usedQuestions[game.usedQuestions.length - 1];
+    const question = questions[questionIndex];
+
+    const answer = msg.answer;
+    const correctAnswer = question.correctAnswer;
+    let points = 0;
+
+    if (answer === correctAnswer) {
+        points = question.steps;
+        games[gameId].scores[playerId] += points;
+    }
+
+    game.currentTurn = (game.currentTurn + 1) % game.players.length;
+    broadcastGameState(gameId);
+
+    setTimeout(() => {
+        gameMaster(gameId);
+    }, 300);
+}
+
+// Start the HTTPS server
+httpsServer.listen(8080, () => {
+    console.log("----------------------------------------");
+    console.log("Server is running on wss://manager-rumble.de:8080");
+    console.log("----------------------------------------");
+});
