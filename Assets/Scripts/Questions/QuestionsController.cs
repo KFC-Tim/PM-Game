@@ -4,6 +4,8 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
 using TMPro;
+using Unity.Mathematics;
+using Unity.VisualScripting;
 using UnityEngine.Events;
 using UnityEngine.LowLevel;
 
@@ -21,6 +23,9 @@ public class QuestionsController : MonoBehaviour
     public TMP_Text answerButtonText3;
     public TMP_Text answerButtonText4;
 
+    private TMP_Text[] _answerButtonTexts;
+    private Button[] _answerButtons;
+    
     private Questions currentQuestion;
     private string playerAnswer;
     
@@ -48,6 +53,10 @@ public class QuestionsController : MonoBehaviour
         answerButton2.onClick.AddListener(() => OnAnswerButtonClick(answerButton2));
         answerButton3.onClick.AddListener(() => OnAnswerButtonClick(answerButton3));
         answerButton4.onClick.AddListener(() => OnAnswerButtonClick(answerButton4));
+
+        _answerButtonTexts = new[] { answerButtonText1, answerButtonText2, answerButtonText3, answerButtonText4 };
+        _answerButtons = new[] { answerButton1, answerButton2, answerButton3, answerButton4 };
+
     }
     
     void Awake() 
@@ -160,17 +169,25 @@ public class QuestionsController : MonoBehaviour
 
     private void UpdateAnswerButtons(string[] answers)
     {
-         if (answers != null && answers.Length >= 4)
+        if (answers.IsUnityNull())
         {
-            answerButtonText1.text = answers[0];
-            answerButtonText2.text = answers[1];
-            answerButtonText3.text = answers[2];
-            answerButtonText4.text = answers[3];
+            Debug.LogError("Antworten-Array ist null");
         }
-        else
+
+        for (int i = 0; i < _answerButtons.Length; ++i)
         {
-            Debug.LogError("Antworten-Array hat nicht die erwartete Länge von 4.");
+            _answerButtonTexts[i].text = "";
+            _answerButtons[i].enabled = false;
+            _answerButtons[i].interactable = false;
         }
+        
+        for (int i = 0; i <  math.min(answers.Length, _answerButtons.Length); ++i)
+        {
+            _answerButtonTexts[i].text = answers[i];
+            _answerButtons[i].interactable = true;
+            _answerButtons[i].enabled = true;
+        }
+         
     }
 
     private void ResetButtonColors()
