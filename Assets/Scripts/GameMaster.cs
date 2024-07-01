@@ -158,8 +158,8 @@ public class GameMaster : MonoBehaviour, IGameController
             throw;
         }
     }
-    
-    public IEnumerator AnswerQuestionCoroutine(MultiplayerManager.QuestionData questionData, Action<string> callback)
+
+    private IEnumerator AnswerQuestionCoroutine(MultiplayerManager.QuestionData questionData, Action<string> callback)
     {
         string answer = null;
 
@@ -212,7 +212,28 @@ public class GameMaster : MonoBehaviour, IGameController
         {
             string qText = questionData.question;
             string[] qAnswers = questionData.answers;
-            q = new Questions(qText, qAnswers, " ", 2, 2);
+            string qTopic;
+            if (questionData.topic.IsUnityNull())
+            {
+                qTopic = "";
+            }
+            else
+            {
+                qTopic = questionData.topic;
+            }
+
+            int points;
+
+            if (questionData.points.IsUnityNull())
+            {
+                points = 0;
+            }
+            else
+            {
+                points = questionData.points;
+            }
+            
+            q = new Questions(qText, qAnswers, " ", qTopic, points);
         }
         catch (Exception e)
         {

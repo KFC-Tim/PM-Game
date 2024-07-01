@@ -14,6 +14,9 @@ public class QuestionsController : MonoBehaviour
     public GameObject questionCanvas;
     private List<Questions> questions = new List<Questions>();
     public TMP_Text questionText;
+    public TMP_Text pointsText;
+    public TMP_Text topicText;
+    
     public Button answerButton1;
     public Button answerButton2;
     public Button answerButton3;
@@ -42,12 +45,6 @@ public class QuestionsController : MonoBehaviour
     void Start()
     {
         Debug.Log("QuestionsController started!");
-        
-        questions.Add(new Questions("Test1", new string[] {"A", "B", "C", "D"}, "B", 2, 2));
-        questions.Add(new Questions("Test2", new string[] {"1", "2", "3", "4"}, "2", 2, 2));
-        questions.Add(new Questions("Test3", new string[] {"K", "B", "C", "D"}, "B", 2, 2));
-        questions.Add(new Questions("Test4", new string[] {"f", "B", "C", "A"}, "A", 2, 2));
-        questions.Add(new Questions("Test5", new string[] {"R", "B", "M", "D"}, "M", 2, 2));
 
         answerButton1.onClick.AddListener(() => OnAnswerButtonClick(answerButton1));
         answerButton2.onClick.AddListener(() => OnAnswerButtonClick(answerButton2));
@@ -74,7 +71,9 @@ public class QuestionsController : MonoBehaviour
     public IEnumerator AskQuestion(Questions q)
     {
         currentQuestion = q;
-        questionText.text = q.questionText; 
+        questionText.text = q.questionText;
+        topicText.text = ToTopic(q.topic);
+        pointsText.text = q.steps.ToString();
         UpdateAnswerButtons(q.questionAnsers);
         ShowCanvas();
 
@@ -95,6 +94,16 @@ public class QuestionsController : MonoBehaviour
     public void SetGameController(IGameController controller)
     {
         gameController = controller;
+    }
+
+    private string ToTopic(string topic)
+    {
+        if (topic.Equals("MKT"))
+        {
+            return "Marketing";
+        }
+
+        return topic;
     }
 
     private void OnAnswerButtonClick(Button clickedButton)

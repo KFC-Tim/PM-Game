@@ -410,5 +410,7 @@ public class MultiplayerManager : MonoBehaviour
     {
         public string question;
         public string[] answers;
+        public string topic;
+        public int points;
     }
 }
