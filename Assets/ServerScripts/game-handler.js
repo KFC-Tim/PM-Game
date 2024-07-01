@@ -205,7 +205,9 @@ function gameMaster(gameId) {
 
     const questionData = {
         question: question.questionText,
-        answers: question.questionAnswers
+        answers: question.questionAnswers,
+        topic: question.topic,
+        points: question.steps
     };
 
     players[currentPlayerId].ws.send(JSON.stringify({
