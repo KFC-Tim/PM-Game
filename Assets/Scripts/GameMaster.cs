@@ -211,9 +211,13 @@ public class GameMaster : MonoBehaviour, IGameController
             yield return new WaitForSeconds(clip.length);
         }
 
-        yield return new WaitForSeconds(2);
+        yield return new WaitForSecondsRealtime(5);
 
-        _killCanvas.SetActive(false);
+        if (!_killCanvas.IsUnityNull())
+        {
+            _killCanvas.SetActive(false);
+        }
+        
     }
 
     public void MovePlayerPiece(int playerindex, int steps)
