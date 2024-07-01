@@ -17,6 +17,9 @@ public class MultiplayerManager : MonoBehaviour
     private int _playerCount = 0;
     private bool _isReady = true;
     private static MultiplayerManager Instance;
+    public ScoreboardManager scoreboardManager;
+
+
 
     void Start()
     {
@@ -106,6 +109,7 @@ public class MultiplayerManager : MonoBehaviour
         _gameDataQueue.Clear();
         var joinMessage = new JoinMessage { type = "join", playerName = newPlayerName, gameId = newGameId };
         SendMessageToServer(JsonUtility.ToJson(joinMessage));
+        scoreboardManager.AddPlayer(newPlayerName); 
     }
 
     public void SwitchToLobbyScene()

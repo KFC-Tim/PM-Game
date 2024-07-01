@@ -1,0 +1,13 @@
+fileFormatVersion: 2
+guid: 454584dca3ade42a8ae58136296bc7b9
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - scoreboardPanel: {fileID: 8921513576358045661, guid: b99e327af317f4579b985bd0cfeb567a, type: 3}
+  - scoreboardItemPrefab: {fileID: 6180578200963987944, guid: a098c3f6c9ecbb04d8283c0bd469b31d, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
