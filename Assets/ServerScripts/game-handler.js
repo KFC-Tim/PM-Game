@@ -217,6 +217,49 @@ function gameMaster(gameId) {
 
     players[currentPlayerId].ws.removeAllListeners('message');
     players[currentPlayerId].ws.once('message', (message) => {
+        if (players[currentPlayerId].points >= 120) {
+            players[currentPlayerId].ws.send(JSON.stringify({
+                type: 'win',
+                message: 'Du hast das Spiel gewonnen!'
+            }));
+        
+            // Remove the winner from the game
+            game.players.splice(game.currentTurn, 1);
+        
+            // If only one player is left, the game is over
+            if (game.players.length === 1) {
+                const remainingPlayer = game.players[0];
+                players[remainingPlayer.uuid].ws.send(JSON.stringify({
+                    type: 'game_over',
+                    message: 'Das Spiel ist vorbei, du bist der letzte verbleibende Spieler.'
+                }));
+                return;
+            }
+        }
+
+        const currentPoints = players[currentPlayerId].points;
+
+        // Check if the player can kill another player
+        for (const player of game.players) {
+            if (player.uuid !== currentPlayerId && 
+                currentPoints >= players[player.uuid].points + 40) {
+                
+                const killedPlayerPoints = players[player.uuid].points;
+                const newRoundStart = Math.floor(killedPlayerPoints / 40) * 40;
+                players[player.uuid].points = newRoundStart;
+
+                players[player.uuid].ws.send(JSON.stringify({
+                    type: 'killed',
+                    message: `Du wurdest von ${players[currentPlayerId].name} geschlagen! Deine Punkte wurden zurückgesetzt zu ${newRoundStart}.`
+                }));
+                
+                players[currentPlayerId].ws.send(JSON.stringify({
+                    type: 'kill',
+                    message: `Du hast ${players[player.uuid].name} geschlagen!`
+                }));
+            }
+        }
+
         const parsedMessage = JSON.parse(message);
         if (parsedMessage.type === 'answer') {
             handleAnswer(players[currentPlayerId].ws, parsedMessage);
