@@ -223,6 +223,14 @@ public class MultiplayerManager : MonoBehaviour
                 Debug.Log("Game Starts!");
                 GameStarts();
                 break;
+            case "kill":
+                Debug.Log(data.message);
+                _gameMasterScript.SetKillText(message, true);
+                break;
+            case "killed":
+                Debug.Log(data.message);
+                _gameMasterScript.SetKillText(message, false);
+                break;
             case "error":
                 Debug.LogError("Error: " + data.message);
                 break;
