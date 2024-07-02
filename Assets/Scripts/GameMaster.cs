@@ -13,6 +13,13 @@ public class GameMaster : MonoBehaviour, IGameController
     [SerializeField] private QuestionsController questionsController;
     public FieldEventController fieldEventController;
 
+    [SerializeField] private TMP_Text _killText;
+    [SerializeField] private GameObject _killCanvas;
+    [SerializeField] private AudioClip _killAudio;
+    [SerializeField] private AudioClip _killedAudio;
+    
+    [SerializeField] private AudioSource _audioSource;
+    
     [SerializeField] private GameObject[] playerPiecePrefabs = new GameObject[4];
     public List<PlayerPiece> playerPieces;
     public int[] playerRounds = new int[4];
@@ -28,6 +35,8 @@ public class GameMaster : MonoBehaviour, IGameController
     private bool[] skipQuestion = {false, false, false, false};
     private bool hasSelected = false;
 
+    
+    
     public static GameMaster Instance { get; private set; }
 
 
@@ -158,14 +167,57 @@ public class GameMaster : MonoBehaviour, IGameController
             throw;
         }
     }
-    
-    public IEnumerator AnswerQuestionCoroutine(MultiplayerManager.QuestionData questionData, Action<string> callback)
+
+    private IEnumerator AnswerQuestionCoroutine(MultiplayerManager.QuestionData questionData, Action<string> callback)
     {
         string answer = null;
 
         yield return StartCoroutine(WaitForAnswer(questionData, (result) => answer = result));
 
         callback(answer);
+    }
+
+    public void SetKillText(string message, bool kill)
+    {
+        StartCoroutine(ShowKillText(message, kill));
+    }
+
+    private IEnumerator ShowKillText(string message, bool kill)
+    {
+        AudioClip clip = null;
+        
+        if (!_killedAudio.IsUnityNull() && !_killAudio.IsUnityNull() && !_audioSource.IsUnityNull())
+        {
+            if (kill)
+            {
+                clip = _killAudio;
+            }
+            else
+            {
+                clip = _killedAudio;
+            }
+            _audioSource.clip = clip;
+        }
+        
+        if (!_killText.IsUnityNull() && !_killCanvas.IsUnityNull())
+        {
+            _killText.text = message;
+            _killCanvas.SetActive(true);
+        }
+
+        if (!clip.IsUnityNull())
+        {
+            _audioSource.Play();
+            yield return new WaitForSeconds(clip.length);
+        }
+
+        yield return new WaitForSecondsRealtime(5);
+
+        if (!_killCanvas.IsUnityNull())
+        {
+            _killCanvas.SetActive(false);
+        }
+        
     }
 
     public void MovePlayerPiece(int playerindex, int steps)
@@ -212,7 +264,28 @@ public class GameMaster : MonoBehaviour, IGameController
         {
             string qText = questionData.question;
             string[] qAnswers = questionData.answers;
-            q = new Questions(qText, qAnswers, " ", 2, 2);
+            string qTopic;
+            if (questionData.topic.IsUnityNull())
+            {
+                qTopic = "";
+            }
+            else
+            {
+                qTopic = questionData.topic;
+            }
+
+            int points;
+
+            if (questionData.points.IsUnityNull())
+            {
+                points = 0;
+            }
+            else
+            {
+                points = questionData.points;
+            }
+            
+            q = new Questions(qText, qAnswers, " ", qTopic, points);
         }
         catch (Exception e)
         {
