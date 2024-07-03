@@ -1,36 +1,45 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 using System.Collections.Generic;
 
 public class ScoreboardManager : MonoBehaviour
 {
-    public GameObject scoreboardPanel; 
-    public GameObject scoreboardItemPrefab; 
+    private TMP_Text[] playerNames = new TMP_Text[4];
+    private TMP_Text[] playerScores = new TMP_Text[4];
 
-    private List<Text> playerScoreItems = new List<Text>();
-
-    public void AddPlayer(string playerName)
+    public void InitializeScoreboard(string[] playerNamesArray, string[] playerUUIDsArray,  Dictionary<string, int> scoreBoard)
     {
-        GameObject newScoreItem = Instantiate(scoreboardItemPrefab, scoreboardPanel.transform);
-        
-        Text textComponent = newScoreItem.AddComponent<Text>();
-        textComponent.text = playerName + ": 0";
-        textComponent.fontSize = 24;
-        textComponent.color = Color.black;
 
-        playerScoreItems.Add(textComponent);
-    }
-
-    public void SetScore(string playerName, int score)
-    {
-        foreach (var item in playerScoreItems)
+        if (playerNamesArray == null || playerUUIDsArray == null)
         {
-            if (item.text.StartsWith(playerName))
+            Debug.LogError("Player names or UUIDs array is null");
+            return;
+        }
+
+        int playerCount = playerNamesArray.Length;
+
+        for (int i = 0; i < playerCount; i++)
+        {
+            playerNames[i] = GameObject.Find($"PlayerName{i + 1}").GetComponent<TMP_Text>();
+            playerScores[i] = GameObject.Find($"PlayerScore{i + 1}").GetComponent<TMP_Text>();
+
+            if (playerNames[i] == null)
             {
-                item.text = playerName + ": " + score;
-                return;
+                Debug.LogError($"playerNames[{i}] is not assigned");
+            }
+            else
+            {
+                playerNames[i].text = playerNamesArray[i];
+            }
+
+            foreach(KeyValuePair<string, int> kvp in scoreBoard)
+            {
+                if (kvp.Key == playerUUIDsArray[i]){
+                    playerScores[i].text = kvp.Value.ToString();
+                }
             }
         }
-        Debug.LogWarning("Player not found in scoreboard: " + playerName);
     }
+    
 }

@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System;
 using System.Linq;
 using UnityEngine.SceneManagement;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using MiniJSON;
 
 public class MultiplayerManager : MonoBehaviour
@@ -17,7 +19,9 @@ public class MultiplayerManager : MonoBehaviour
     private int _playerCount = 0;
     private bool _isReady = true;
     private static MultiplayerManager Instance;
-    public ScoreboardManager scoreboardManager;
+    private ScoreboardManager _scoreboardManager = new ScoreboardManager();
+
+    private bool isScoreboardInitialized = false;
 
 
 
@@ -75,9 +79,9 @@ public class MultiplayerManager : MonoBehaviour
 
     void Update()
     {
-#if !UNITY_WEBGL || UNITY_EDITOR
-        websocket.DispatchMessageQueue();
-#endif
+        #if !UNITY_WEBGL || UNITY_EDITOR
+                websocket.DispatchMessageQueue();
+        #endif
     }
 
     public void SwitchToMenuScene() => SceneManager.LoadScene("MenuScene");
@@ -109,7 +113,6 @@ public class MultiplayerManager : MonoBehaviour
         _gameDataQueue.Clear();
         var joinMessage = new JoinMessage { type = "join", playerName = newPlayerName, gameId = newGameId };
         SendMessageToServer(JsonUtility.ToJson(joinMessage));
-        scoreboardManager.AddPlayer(newPlayerName); 
     }
 
     public void SwitchToLobbyScene()
@@ -134,9 +137,41 @@ public class MultiplayerManager : MonoBehaviour
 
     public int GetPlayerCount() => _playerCount;
 
+    public string[] GetPlayerNamesArray()
+    {
+        if (_gameState.GameState == null || _gameState.GameState.players == null)
+        {
+            Debug.LogError("GameState or players list is not set in MultiplayerManager");
+            return new string[0];
+        }
+        return _gameState.GameState.players.Select(player => player.name).ToArray();
+    }
+
+    public string[] GetPlayerUUIDsArray()
+    {
+        if (_gameState.GameState == null || _gameState.GameState.players == null)
+        {
+            Debug.LogError("GameState or players list is not set in MultiplayerManager");
+            return new string[0];
+        }
+        return _gameState.GameState.players.Select(player => player.uuid).ToArray();
+    }
+
+    public Dictionary<string, int> GetScores()
+    {
+        if (_gameState.GameState == null || _gameState.GameState.scores == null)
+        {
+            Debug.LogError("GameState or scores dictionary is not set in MultiplayerManager");
+            return new Dictionary<string, int>();
+        }
+
+        return new Dictionary<string, int>(_gameState.GameState.scores);
+    }
+
     private void OnGameSceneLoaded()
     {
         Debug.Log("GameScene is loaded completely.");
+
     }
 
     private void LoadQueues()
@@ -151,7 +186,10 @@ public class MultiplayerManager : MonoBehaviour
         foreach (var gameState in _gameDataQueue)
         {
             _gameMasterScript.UpdateGameState(gameState);
+            Debug.Log("Loading:" + gameState.players);
             Debug.Log("Loading: " + JsonUtility.ToJson(gameState));
+
+            _scoreboardManager.InitializeScoreboard(GetPlayerNamesArray(), GetPlayerUUIDsArray(), GetScores());
         }
         _gameDataQueue.Clear();
     }
@@ -293,6 +331,12 @@ public class MultiplayerManager : MonoBehaviour
 
     private void UpdateGameState(ServerMessage data)
     {
+         if (!isScoreboardInitialized)
+        {
+            _scoreboardManager.InitializeScoreboard(GetPlayerNamesArray(), GetPlayerUUIDsArray(), GetScores());
+            isScoreboardInitialized = true;
+        }
+
         if (data?.state == null || data.state.scores == null)
         {
             Debug.LogError("Invalid ServerMessage or missing scores");
@@ -310,6 +354,10 @@ public class MultiplayerManager : MonoBehaviour
         Debug.Log(_gameState);
         Debug.Log("GameState: " + JsonUtility.ToJson(_gameState.GameState));
         _gameMasterScript.UpdateGameState(_gameState.GameState);
+
+        Debug.Log(_gameState.GameState.scores);
+        //_scoreboardManager.InitializeScoreboard(GetPlayerNamesArray(), GetPlayerUUIDsArray());
+        _scoreboardManager.InitializeScoreboard(GetPlayerNamesArray(), GetPlayerUUIDsArray(), GetScores());
     }
 
     private void HandleJoinGame(ServerMessage data)
@@ -325,6 +373,7 @@ public class MultiplayerManager : MonoBehaviour
         foreach (var player in _gameState.GameState.players)
         {
             Debug.Log("Player UUID: " + player.uuid + ", Name: " + player.name);
+            Debug.Log("AddPlayer" + player.name);
         }
 
         foreach (var score in _gameState.GameState.scores)
