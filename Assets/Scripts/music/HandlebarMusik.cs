@@ -11,7 +11,12 @@ public class MusicVolumeSlider : MonoBehaviour
     {
         if (musicSlider != null)
         {
-            musicSlider.value = _audioSource.volume;
+            musicSlider.value = CrossSceneInformation.MusicVolume;
+
+          if (_audioSource != null)
+            {
+                _audioSource.volume = CrossSceneInformation.MusicVolume;
+            }
 
             musicSlider.onValueChanged.AddListener(OnMusicVolumeChanged);
         }
@@ -26,6 +31,7 @@ public class MusicVolumeSlider : MonoBehaviour
         if (_audioSource != null)
         {
             _audioSource.volume = volume;
+            CrossSceneInformation.MusicVolume = volume;
         }
     }
     

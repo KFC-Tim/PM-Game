@@ -10,11 +10,15 @@ public class Music : MonoBehaviour
         if (_instance == null)
         {
             _instance = this;
-            DontDestroyOnLoad(gameObject);
         }
         else
         {
+            if (_audioSource != null && _audioSource.isPlaying)
+            {
+                _audioSource.Stop();
+            }
             Destroy(gameObject);
+            return;
         }
     }
 
@@ -25,6 +29,7 @@ public class Music : MonoBehaviour
             Debug.LogError("AudioSource ist nicht zugewiesen! Bitte weise eine AudioSource im Inspector zu.");
             return;
         }
+        _audioSource.volume = CrossSceneInformation.MusicVolume;
         _audioSource.Play();
     }
 }
