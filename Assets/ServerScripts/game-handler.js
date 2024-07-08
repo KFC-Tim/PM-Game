@@ -217,52 +217,63 @@ function gameMaster(gameId) {
 
     players[currentPlayerId].ws.removeAllListeners('message');
     players[currentPlayerId].ws.once('message', (message) => {
-        if (players[currentPlayerId].points >= 120) {
-            players[currentPlayerId].ws.send(JSON.stringify({
-                type: 'win',
-                message: 'Du hast das Spiel gewonnen!'
-            }));
-        
-            // Remove the winner from the game
-            game.players.splice(game.currentTurn, 1);
-        
-            // If only one player is left, the game is over
-            if (game.players.length === 1) {
-                const remainingPlayer = game.players[0];
-                players[remainingPlayer.uuid].ws.send(JSON.stringify({
-                    type: 'game_over',
-                    message: 'Das Spiel ist vorbei, du bist der letzte verbleibende Spieler.'
-                }));
-                return;
-            }
-        }
-
-        const currentPoints = players[currentPlayerId].points;
-
-        // Check if the player can kill another player
-        for (const player of game.players) {
-            if (player.uuid !== currentPlayerId && 
-                currentPoints >= players[player.uuid].points + 40) {
-                
-                const killedPlayerPoints = players[player.uuid].points;
-                const newRoundStart = Math.floor(killedPlayerPoints / 40) * 40;
-                players[player.uuid].points = newRoundStart;
-
-                players[player.uuid].ws.send(JSON.stringify({
-                    type: 'killed',
-                    message: `Du wurdest von ${players[currentPlayerId].name} geschlagen! Deine Punkte wurden zurückgesetzt zu ${newRoundStart}.`
-                }));
-                
-                players[currentPlayerId].ws.send(JSON.stringify({
-                    type: 'kill',
-                    message: `Du hast ${players[player.uuid].name} geschlagen!`
-                }));
-            }
-        }
-
         const parsedMessage = JSON.parse(message);
         if (parsedMessage.type === 'answer') {
             handleAnswer(players[currentPlayerId].ws, parsedMessage);
+
+            // Check if the player has won
+            if (players[currentPlayerId].points >= 120) {
+                players[currentPlayerId].ws.send(JSON.stringify({
+                    type: 'win',
+                    message: 'Du hast das Spiel gewonnen!'
+                }));
+
+                // Remove the winner from the game
+                game.players.splice(game.currentTurn, 1);
+
+                // If only one player is left, end the game
+                if (game.players.length === 1) {
+                    const remainingPlayer = game.players[0];
+                    players[remainingPlayer.uuid].ws.send(JSON.stringify({
+                        type: 'game_over',
+                        message: 'Das Spiel ist vorbei, du bist der letzte verbleibende Spieler.'
+                    }));
+
+                    // End the game
+                    delete games[gameId];
+                    return;
+                } else {
+                    // Update the game state after removing the winner
+                    broadcastGameState(gameId);
+                }
+            } else {
+                // Check if the player can kill another player
+                const currentPoints = players[currentPlayerId].points;
+                for (const player of game.players) {
+                    if (player.uuid !== currentPlayerId && 
+                        currentPoints >= players[player.uuid].points + 40) {
+
+                        const killedPlayerPoints = players[player.uuid].points;
+                        const newRoundStart = Math.floor(killedPlayerPoints / 40) * 40;
+                        players[player.uuid].points = newRoundStart;
+
+                        players[player.uuid].ws.send(JSON.stringify({
+                            type: 'killed',
+                            message: `Du wurdest von ${players[currentPlayerId].name} geschlagen! Deine Punkte wurden zurückgesetzt zu ${newRoundStart}.`
+                        }));
+
+                        players[currentPlayerId].ws.send(JSON.stringify({
+                            type: 'kill',
+                            message: `Du hast ${players[player.uuid].name} geschlagen!`
+                        }));
+                    }
+                }
+
+                // Move to the next turn only if no player won
+                game.currentTurn = (game.currentTurn + 1) % game.players.length;
+                broadcastGameState(gameId);
+                setTimeout(() => gameMaster(gameId), 150);
+            }
         } else {
             console.warn("Unexpected message type:", parsedMessage.type);
         }
@@ -292,15 +303,16 @@ function handleAnswer(ws, msg) {
 
     if (answer === correctAnswer) {
         points = question.steps;
+        players[playerId].points = (players[playerId].points || 0) + points; // Ensure points property is initialized
         games[gameId].scores[playerId] += points;
     }
 
-    game.currentTurn = (game.currentTurn + 1) % game.players.length;
+    // Broadcast the updated game state
     broadcastGameState(gameId);
 
     setTimeout(() => {
         gameMaster(gameId);
-    }, 300);
+    }, 150);
 }
 
 // Start the HTTPS server
