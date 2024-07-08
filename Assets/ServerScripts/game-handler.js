@@ -247,33 +247,46 @@ function gameMaster(gameId) {
                     broadcastGameState(gameId);
                 }
             } else {
-                // Check if the player can kill another player
+                // Check if the player can kill another player by overtaking them or landing on their position
                 const currentPoints = players[currentPlayerId].points;
-                for (const player of game.players) {
-                    if (player.uuid !== currentPlayerId && 
-                        currentPoints >= players[player.uuid].points + 40) {
 
-                        const killedPlayerPoints = players[player.uuid].points;
-                        const newRoundStart = Math.floor(killedPlayerPoints / 40) * 40;
-                        players[player.uuid].points = newRoundStart;
+                game.players.forEach(player => {
+                    if (player.uuid !== currentPlayerId) {
+                        const otherPlayerPoints = players[player.uuid].points;
+                        const currentPlayerPosition = (currentPoints + currentPlayer.number * 10) % 40;
+                        const otherPlayerPosition = (otherPlayerPoints + player.number * 10) % 40;
 
-                        players[player.uuid].ws.send(JSON.stringify({
-                            type: 'killed',
-                            message: `Du wurdest von ${players[currentPlayerId].name} geschlagen! Deine Punkte wurden zurückgesetzt zu ${newRoundStart}.`
-                        }));
+                        // Check if the current player has overtaken or landed on the other player
+                        if (currentPoints > otherPlayerPoints && (currentPlayerPosition === otherPlayerPosition || currentPoints - otherPlayerPoints >= 40)) {
+                            let newPoints = 0;
+                            if (otherPlayerPoints >= 80) {
+                                newPoints = 80;
+                            } else if (otherPlayerPoints >= 40) {
+                                newPoints = 40;
+                            }
 
-                        players[currentPlayerId].ws.send(JSON.stringify({
-                            type: 'kill',
-                            message: `Du hast ${players[player.uuid].name} geschlagen!`
-                        }));
+                            players[player.uuid].points = newPoints;
+
+                            players[player.uuid].ws.send(JSON.stringify({
+                                type: 'killed',
+                                message: `Du wurdest von ${players[currentPlayerId].name} geschlagen! Deine Punkte wurden zurückgesetzt zu ${newPoints}.`
+                            }));
+
+                            players[currentPlayerId].ws.send(JSON.stringify({
+                                type: 'kill',
+                                message: `Du hast ${players[player.uuid].name} geschlagen!`
+                            }));
+                        }
                     }
-                }
+                });
 
-                // Move to the next turn only if no player won
-                game.currentTurn = (game.currentTurn + 1) % game.players.length;
+                // Broadcast updated game state
                 broadcastGameState(gameId);
-                setTimeout(() => gameMaster(gameId), 150);
             }
+
+            // Move to the next turn only if no player won
+            game.currentTurn = (game.currentTurn + 1) % game.players.length;
+            setTimeout(() => gameMaster(gameId), 150);
         } else {
             console.warn("Unexpected message type:", parsedMessage.type);
         }
