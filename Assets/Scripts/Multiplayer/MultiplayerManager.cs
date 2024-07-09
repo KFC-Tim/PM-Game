@@ -298,26 +298,6 @@ public class MultiplayerManager : MonoBehaviour
         Debug.Log("GameMaster is set and queues are loaded.");
     }
 
-    private async void BroadcastGameStateUpdate()
-    {
-        if (websocket.State == WebSocketState.Open)
-        {
-            var updateMessage = new ServerMessage
-            {
-                type = "update",
-                gameId = _gameState.GameId,
-                state = _gameState.GameState
-            };
-
-            string jsonMessage = JsonUtility.ToJson(updateMessage);
-            await websocket.Send(Encoding.UTF8.GetBytes(jsonMessage));
-        }
-        else
-        {
-            Debug.LogError("Failed to send message. WebSocket is not open.");
-        }
-    }
-
     private void UpdateGameState(ServerMessage data)
     {
         if (data?.state == null || data.state.scores == null)
@@ -343,7 +323,6 @@ public class MultiplayerManager : MonoBehaviour
 
         OnPlayerCountChanged?.Invoke();
 
-        BroadcastGameStateUpdate();      
     }
 
     private void HandleJoinGame(ServerMessage data)
@@ -369,8 +348,6 @@ public class MultiplayerManager : MonoBehaviour
         Debug.Log("Current Turn: " + _gameState.GameState.currentTurn);
 
         OnPlayerCountChanged?.Invoke(); 
-
-        BroadcastGameStateUpdate();
     }
 
 
