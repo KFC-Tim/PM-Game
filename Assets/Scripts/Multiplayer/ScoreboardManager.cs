@@ -54,19 +54,6 @@ public class ScoreboardManager : MonoBehaviour
             }
         }
 
-
-        // Hide unused player names and scores
-        for (int i = playerCount + 1; i < maxPlayer; i++)
-        {
-            playerNames[i] = GameObject.Find($"PlayerName{i + 1}").GetComponent<TMP_Text>();
-            playerScores[i] = GameObject.Find($"PlayerScore{i + 1}").GetComponent<TMP_Text>();
-
-            if (playerNames[i] != null)
-                playerNames[i].gameObject.SetActive(false);
-
-            if (playerScores[i] != null)
-                playerScores[i].gameObject.SetActive(false);
-        }
     }
 
 

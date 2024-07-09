@@ -181,6 +181,8 @@ public class MultiplayerManager : MonoBehaviour
         LoadGameDataQueue();
         LoadQuestionDataQueue();
         Debug.Log("Queues were loaded!");
+
+        _scoreboardManager.InitializeScoreboard(GetPlayerNamesArray(), GetPlayerUUIDsArray(), GetScores());
     }
 
     private void LoadGameDataQueue()
