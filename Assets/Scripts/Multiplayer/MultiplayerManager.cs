@@ -9,6 +9,9 @@ using MiniJSON;
 
 public class MultiplayerManager : MonoBehaviour
 {
+    public delegate void PlayerCountChanged(); 
+    public static event PlayerCountChanged OnPlayerCountChanged; 
+
     private WebSocket websocket;
     private ClientGameState _gameState = new ClientGameState();
     private GameMaster _gameMasterScript;
@@ -314,6 +317,11 @@ public class MultiplayerManager : MonoBehaviour
         Debug.Log(_gameState);
         Debug.Log("GameState: " + JsonUtility.ToJson(_gameState.GameState));
         _gameMasterScript.UpdateGameState(_gameState.GameState);
+
+
+        //trigger event for player count changed
+
+        OnPlayerCountChanged?.Invoke();     
     }
 
     private void HandleJoinGame(ServerMessage data)
@@ -337,6 +345,8 @@ public class MultiplayerManager : MonoBehaviour
         }
 
         Debug.Log("Current Turn: " + _gameState.GameState.currentTurn);
+
+        OnPlayerCountChanged?.Invoke(); 
     }
 
     private void GameEnd(string winner)

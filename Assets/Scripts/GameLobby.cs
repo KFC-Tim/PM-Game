@@ -35,19 +35,20 @@ public class GameLobby : MonoBehaviour
         _startCanvas.SetActive(true);
 
         _startButton.onClick.AddListener(() => StartButtonClick());
+
+        MultiplayerManager.OnPlayerCountChanged += UpdateCurrentPlayerText;
+        UpdateCurrentPlayerText();
     }
 
-    // Update is called once per frame
-    void Update()
+    void OnDestroy()
     {
-        players = _multiplayerManager.GetPlayerCount();
-        UpdateCurrentPlayerText();
+        MultiplayerManager.OnPlayerCountChanged -= UpdateCurrentPlayerText;
     }
 
     void UpdateCurrentPlayerText()
     {
         var text = _currentPlayerText.GetComponent<TextMeshProUGUI>();
-        text.SetText("Current Players: " + players);
+        text.SetText("Current Players: " + _multiplayerManager.GetPlayerCount());
     }
     
 
