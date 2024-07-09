@@ -2,7 +2,7 @@
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class CrossSceneInformation
+public static class CrossSceneInformation
 {
     public static MultiplayerManager MultiplayerManager { get; set; }
     public static bool GameMasterLoaded { get; private set; }
@@ -19,11 +19,7 @@ public class CrossSceneInformation
         GameMasterLoaded = value;
     }
     public static GameMaster GameMasterInstance { get; private set; }
-    
-    public static bool GetGameMasterInstance()
-    {
-        return GameMasterInstance;
-    }
+ 
 
     public static void SetGameMasterInstance(GameMaster gameMaster)
     {

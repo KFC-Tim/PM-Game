@@ -43,7 +43,9 @@ public class GameMaster : MonoBehaviour, IGameController
         Debug.Log("GameMaster started!!");
         CrossSceneInformation.SetGameMasterLoaded(true);
         CrossSceneInformation.SetGameMasterInstance(this);
-        InitializePlayerPieces();
+        //InitializePlayerPieces();
+        playerPieces = new List<PlayerPiece>();
+        
         questionsController.SetGameController(this);
         
         if(board == null){
@@ -117,7 +119,7 @@ public class GameMaster : MonoBehaviour, IGameController
         {
             try
             {
-                if (i > playerPieces.Count)
+                if (i >= playerPieces.Count)
                 {
                     Debug.Log("Creating new Player Piece");
                     Vector3 offset = new Vector3(0, 0.35f, 0);
@@ -130,8 +132,8 @@ public class GameMaster : MonoBehaviour, IGameController
                     {
                         meshRenderer.enabled = true;
                     }
-
-                    playerPieces[i] = pieceInstance.GetComponent<PlayerPiece>();
+                    
+                    playerPieces.Add(pieceInstance.GetComponent<PlayerPiece>());
                     playerPieces[i].SetPath(GetBoardPathForTeam(i));
                 }
 
