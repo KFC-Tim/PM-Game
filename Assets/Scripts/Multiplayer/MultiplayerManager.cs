@@ -14,7 +14,6 @@ public class MultiplayerManager : MonoBehaviour
     private GameMaster _gameMasterScript;
     private List<GameState> _gameDataQueue = new List<GameState>();
     private List<QuestionData> _questionDataQueue = new List<QuestionData>();
-    private int _playerCount = 0;
     private bool _isReady = true;
     private static MultiplayerManager Instance;
 
@@ -128,7 +127,6 @@ public class MultiplayerManager : MonoBehaviour
         SwitchToGameScene();
     }
 
-    public int GetPlayerCount() => _playerCount;
 
     private void OnGameSceneLoaded()
     {
@@ -303,13 +301,14 @@ public class MultiplayerManager : MonoBehaviour
             return;
         }
 
+        CrossSceneInformation.currentPlayers = data.state.players.Count;
+        
         if (!_isReady)
         {
             _gameDataQueue.Add(data.state);
             return;
         }
 
-        _playerCount = data.state.scores.Count;
         _gameState.GameState = data.state;
         Debug.Log(_gameState);
         Debug.Log("GameState: " + JsonUtility.ToJson(_gameState.GameState));
@@ -322,8 +321,6 @@ public class MultiplayerManager : MonoBehaviour
         _gameState.GameState = data.state ?? new GameState();
         _gameState.GameState.players ??= new List<Player>();
         _gameState.GameState.scores ??= new Dictionary<string, int>();
-
-        _playerCount = data.playerNumber;
 
         Debug.Log("Joined Game: " + _gameState.GameId);
         foreach (var player in _gameState.GameState.players)

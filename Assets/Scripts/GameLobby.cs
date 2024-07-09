@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using Unity.VisualScripting;
+using UnityEngine.SceneManagement;
 
 public class GameLobby : MonoBehaviour
 {
@@ -38,11 +39,12 @@ public class GameLobby : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    public void Update()
     {
-        players = _multiplayerManager.GetPlayerCount();
+        players = CrossSceneInformation.currentPlayers;
         UpdateCurrentPlayerText();
     }
+
 
     void UpdateCurrentPlayerText()
     {

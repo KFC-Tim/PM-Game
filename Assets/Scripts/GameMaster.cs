@@ -112,6 +112,7 @@ public class GameMaster : MonoBehaviour, IGameController
         {
             return;
         }
+
         foreach (var player in gameState.players)
         {
             try
