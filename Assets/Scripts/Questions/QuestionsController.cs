@@ -154,7 +154,7 @@ public class QuestionsController : MonoBehaviour
 
 
         // Hide the canvas
-        ResetButtonColors();
+        //ResetButtonColors();
         HideCanvas();
 
         if (isCorrect)
@@ -188,6 +188,7 @@ public class QuestionsController : MonoBehaviour
             _answerButtonTexts[i].text = "";
             _answerButtons[i].enabled = false;
             _answerButtons[i].interactable = false;
+            _answerButtons[i].GetComponent<Image>().color = Color.gray;
         }
         
         for (int i = 0; i <  math.min(answers.Length, _answerButtons.Length); ++i)
@@ -195,6 +196,7 @@ public class QuestionsController : MonoBehaviour
             _answerButtonTexts[i].text = answers[i];
             _answerButtons[i].interactable = true;
             _answerButtons[i].enabled = true;
+            _answerButtons[i].GetComponent<Image>().color = Color.white;
         }
          
     }

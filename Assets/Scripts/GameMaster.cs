@@ -13,6 +13,10 @@ public class GameMaster : MonoBehaviour, IGameController
     [SerializeField] private QuestionsController questionsController;
     public FieldEventController fieldEventController;
 
+    [SerializeField] private TMP_Text _killText;
+    [SerializeField] private GameObject _killCanvas;
+    
+    
     [SerializeField] private GameObject[] playerPiecePrefabs = new GameObject[4];
     public List<PlayerPiece> playerPieces;
     public int[] playerRounds = new int[4];
@@ -28,6 +32,8 @@ public class GameMaster : MonoBehaviour, IGameController
     private bool[] skipQuestion = {false, false, false, false};
     private bool hasSelected = false;
 
+    
+    
     public static GameMaster Instance { get; private set; }
 
 
@@ -46,6 +52,7 @@ public class GameMaster : MonoBehaviour, IGameController
         }
 
         //InitializePlayerPieces();
+
 
         // maybe here the random or by join the lobby
         currentPlayerIndex = 0;
@@ -166,6 +173,29 @@ public class GameMaster : MonoBehaviour, IGameController
         yield return StartCoroutine(WaitForAnswer(questionData, (result) => answer = result));
 
         callback(answer);
+    }
+
+    public void SetKillText(string message, bool kill)
+    {
+        StartCoroutine(ShowKillText(message, kill));
+    }
+
+    private IEnumerator ShowKillText(string message, bool kill)
+    {
+            
+        if (!_killText.IsUnityNull() && !_killCanvas.IsUnityNull())
+        {
+            _killText.text = message;
+            _killCanvas.SetActive(true);
+        }
+        
+        yield return new WaitForSecondsRealtime(5);
+
+        if (!_killCanvas.IsUnityNull())
+        {
+            _killCanvas.SetActive(false);
+        }
+        
     }
 
     public void MovePlayerPiece(int playerindex, int steps)

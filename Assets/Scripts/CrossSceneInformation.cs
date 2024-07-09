@@ -30,4 +30,16 @@ public class CrossSceneInformation
         MultiplayerManager.GetInstance().SetGameMaster(gameMaster);
     }
 
+     private static float musicVolume = 1.0f;
+    
+    public static float MusicVolume
+    {
+        get => musicVolume;
+        set
+        {
+            musicVolume = value;
+            Debug.Log($"Music volume set to: {musicVolume}");
+        }
+    }
+
 }
