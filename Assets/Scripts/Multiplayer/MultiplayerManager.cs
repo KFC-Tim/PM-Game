@@ -8,6 +8,7 @@ using UnityEngine.SceneManagement;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using MiniJSON;
+using TMPro;
 
 public class MultiplayerManager : MonoBehaviour
 {
@@ -29,6 +30,7 @@ public class MultiplayerManager : MonoBehaviour
     {
         _gameState = new ClientGameState();
         ConnectToServer();
+
     }
 
     private void Awake()
