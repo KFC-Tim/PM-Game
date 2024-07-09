@@ -6,6 +6,7 @@ public static class CrossSceneInformation
 {
     public static MultiplayerManager MultiplayerManager { get; set; }
     public static bool GameMasterLoaded { get; private set; }
+    public static int currentPlayers;
 
     public static bool GetGameMasterLoaded()
     {

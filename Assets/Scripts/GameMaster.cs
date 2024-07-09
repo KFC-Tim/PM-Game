@@ -110,7 +110,11 @@ public class GameMaster : MonoBehaviour, IGameController
         }
         
         Debug.Log(playerPieces.Count);
-        
+        if (playerPieces.Count <= 0)
+        {
+            return;
+        }
+
         foreach (var player in gameState.players)
         {
             try
