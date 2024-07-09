@@ -15,10 +15,7 @@ public class GameMaster : MonoBehaviour, IGameController
 
     [SerializeField] private TMP_Text _killText;
     [SerializeField] private GameObject _killCanvas;
-    [SerializeField] private AudioClip _killAudio;
-    [SerializeField] private AudioClip _killedAudio;
     
-    [SerializeField] private AudioSource _audioSource;
     
     [SerializeField] private GameObject[] playerPiecePrefabs = new GameObject[4];
     public List<PlayerPiece> playerPieces;
@@ -55,6 +52,7 @@ public class GameMaster : MonoBehaviour, IGameController
         }
 
         //InitializePlayerPieces();
+
 
         // maybe here the random or by join the lobby
         currentPlayerIndex = 0;
@@ -184,33 +182,13 @@ public class GameMaster : MonoBehaviour, IGameController
 
     private IEnumerator ShowKillText(string message, bool kill)
     {
-        AudioClip clip = null;
-        
-        if (!_killedAudio.IsUnityNull() && !_killAudio.IsUnityNull() && !_audioSource.IsUnityNull())
-        {
-            if (kill)
-            {
-                clip = _killAudio;
-            }
-            else
-            {
-                clip = _killedAudio;
-            }
-            _audioSource.clip = clip;
-        }
-        
+            
         if (!_killText.IsUnityNull() && !_killCanvas.IsUnityNull())
         {
             _killText.text = message;
             _killCanvas.SetActive(true);
         }
-
-        if (!clip.IsUnityNull())
-        {
-            _audioSource.Play();
-            yield return new WaitForSeconds(clip.length);
-        }
-
+        
         yield return new WaitForSecondsRealtime(5);
 
         if (!_killCanvas.IsUnityNull())
