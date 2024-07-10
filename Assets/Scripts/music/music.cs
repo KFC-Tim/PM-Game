@@ -5,6 +5,19 @@ public class Music : MonoBehaviour
     [SerializeField] private AudioSource _audioSource;
     private static Music _instance;
 
+
+    public static Music Instance
+    {
+        get { return _instance; }
+    }
+
+    public AudioSource AudioSource
+    {
+        get { return _audioSource; }
+    }
+
+    
+
     void Awake()
     {
         if (_instance == null)

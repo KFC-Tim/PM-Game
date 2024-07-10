@@ -64231,6 +64231,9 @@ MonoBehaviour:
   fieldEventController: {fileID: 1040871609}
   _killText: {fileID: 285521321}
   _killCanvas: {fileID: 898169556}
+  _killAudio: {fileID: 8300000, guid: 79180f511d89441b9aa23ccae1992fe0, type: 3}
+  _killedAudio: {fileID: 8300000, guid: dc6614beca09347ec9b258f12d154bdd, type: 3}
+  _audioSource: {fileID: 0}
   playerPiecePrefabs:
   - {fileID: 1560630350}
   - {fileID: 1073280561}

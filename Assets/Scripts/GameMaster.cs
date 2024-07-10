@@ -18,7 +18,6 @@ public class GameMaster : MonoBehaviour, IGameController
 
     [SerializeField] private AudioClip _killAudio; 
     [SerializeField] private AudioClip _killedAudio; 
-    [SerializeField] private AudioSource _audioSource; 
     
     
     [SerializeField] private GameObject[] playerPiecePrefabs = new GameObject[4];
@@ -191,8 +190,9 @@ public class GameMaster : MonoBehaviour, IGameController
     private IEnumerator ShowKillText(string message, bool kill)
     {
         AudioClip clip = null;
+        AudioSource musicAudioSource = Music.Instance.AudioSource;
         
-        if (!_killedAudio.IsUnityNull() && !_killAudio.IsUnityNull() && !_audioSource.IsUnityNull())
+        if (!_killedAudio.IsUnityNull() && !_killAudio.IsUnityNull() && !musicAudioSource.IsUnityNull())
         {
             if (kill)
             {
@@ -202,7 +202,7 @@ public class GameMaster : MonoBehaviour, IGameController
             {
                 clip = _killedAudio;
             }
-            _audioSource.clip = clip;
+            musicAudioSource.clip = clip;
         }
         
         if (!_killText.IsUnityNull() && !_killCanvas.IsUnityNull())
@@ -213,7 +213,7 @@ public class GameMaster : MonoBehaviour, IGameController
 
         if (!clip.IsUnityNull())
         {
-            _audioSource.Play();
+            musicAudioSource.Play();
             yield return new WaitForSeconds(clip.length);
         }
 
