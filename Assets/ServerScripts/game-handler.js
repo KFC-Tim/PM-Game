@@ -110,9 +110,11 @@ function handleJoinGame(ws, playerName, gameId) {
         return;
     }
     const playerId = generatePlayerId();
-    players[playerId] = { ws, playerName, gameId };
+    const startOffset = games[gameId].players.length * 10; // Set startOffset for the new player
+    players[playerId] = { ws, playerName, gameId, startOffset, points: 0 }; // Initialize points for each player
+
     const playerPosition = games[gameId].players.length + 1;
-    games[gameId].players.push({ uuid: playerId, name: playerName, number: playerPosition });
+    games[gameId].players.push({ uuid: playerId, name: playerName, number: playerPosition, startOffset });
     games[gameId].scores[playerId] = 0;
 
     ws.send(JSON.stringify({ type: 'joined', gameId, playerNumber: playerPosition }));
@@ -214,7 +216,7 @@ function gameMaster(gameId) {
         type: 'question',
         questionData: questionData
     }));
-
+    const previousPoints = players[currentPlayerId].points;
     players[currentPlayerId].ws.removeAllListeners('message');
     players[currentPlayerId].ws.once('message', (message) => {
         const parsedMessage = JSON.parse(message);
@@ -253,25 +255,32 @@ function gameMaster(gameId) {
                 game.players.forEach(player => {
                     if (player.uuid !== currentPlayerId) {
                         const otherPlayerPoints = players[player.uuid].points;
-                        const currentPlayerPosition = (currentPoints + currentPlayer.number * 10) % 40;
-                        const otherPlayerPosition = (otherPlayerPoints + player.number * 10) % 40;
-
+                
+                        // Calculate positions considering the initial offset
+                        const currentPlayerPosition = (currentPoints + players[currentPlayerId].startOffset) % 40;
+                        const previousPlayerPosition = (previousPoints + players[currentPlayerId].startOffset) % 40;
+                        const otherPlayerPosition = (otherPlayerPoints + players[player.uuid].startOffset) % 40;
+                
                         // Check if the current player has overtaken or landed on the other player
-                        if (currentPoints > otherPlayerPoints && (currentPlayerPosition === otherPlayerPosition || currentPoints - otherPlayerPoints >= 40)) {
+                        const hasLanded = currentPlayerPosition === otherPlayerPosition;
+                        const hasOvertaken = previousPlayerPosition < otherPlayerPosition && currentPlayerPosition > otherPlayerPosition && currentPlayerPosition - otherPlayerPosition < 40;
+                
+                        if (hasLanded || hasOvertaken) {
                             let newPoints = 0;
                             if (otherPlayerPoints >= 80) {
                                 newPoints = 80;
                             } else if (otherPlayerPoints >= 40) {
                                 newPoints = 40;
                             }
-
+                
                             players[player.uuid].points = newPoints;
-
+                            games[gameId].scores[player.uuid] = newPoints;
+                
                             players[player.uuid].ws.send(JSON.stringify({
                                 type: 'killed',
                                 message: `Du wurdest von ${players[currentPlayerId].name} geschlagen! Deine Punkte wurden zurückgesetzt zu ${newPoints}.`
                             }));
-
+                
                             players[currentPlayerId].ws.send(JSON.stringify({
                                 type: 'kill',
                                 message: `Du hast ${players[player.uuid].name} geschlagen!`
@@ -279,7 +288,7 @@ function gameMaster(gameId) {
                         }
                     }
                 });
-
+                
                 // Broadcast updated game state
                 broadcastGameState(gameId);
             }
