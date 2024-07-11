@@ -18,7 +18,7 @@ public class GameMaster : MonoBehaviour, IGameController
     
     
     [SerializeField] private GameObject[] playerPiecePrefabs = new GameObject[4];
-    public List<PlayerPiece> playerPieces;
+    public List<PlayerPiece> playerPieces = new List<PlayerPiece>();
     public int[] playerRounds = new int[4];
     
 
@@ -41,10 +41,9 @@ public class GameMaster : MonoBehaviour, IGameController
     void Start()
     {
         Debug.Log("GameMaster started!!");
+        InitializePlayerPieces(CrossSceneInformation.currentPlayers);
         CrossSceneInformation.SetGameMasterLoaded(true);
         CrossSceneInformation.SetGameMasterInstance(this);
-        //InitializePlayerPieces();
-        playerPieces = new List<PlayerPiece>();
         
         questionsController.SetGameController(this);
         
@@ -73,13 +72,9 @@ public class GameMaster : MonoBehaviour, IGameController
         } 
     }
 
-    public void StartGame(int totalPlayers)
+    public void ShowWin(string message)
     {
-        this.totalPlayers = totalPlayers;
-        inventoryManager.ShowInventory();
         
-        // Starts the game
-        AtTurn();
     }
 
     public void UpdateGameState(MultiplayerManager.GameState gameState)
@@ -345,13 +340,13 @@ public class GameMaster : MonoBehaviour, IGameController
 
 
     // Initialize all the player pieces and give them a position
-    private void InitializePlayerPieces()
+    private void InitializePlayerPieces(int count)
     {
 
         playerPieces = new List<PlayerPiece>();
         Vector3 offset = new Vector3(0, 0.35f, 0); // Move 1 unit higher on the y-axis
 
-        for (int team = 0; team < totalPlayers; team++)
+        for (int team = 0; team < count; team++)
         {
                 Vector3 startPosition = GetStartPosition(team) + offset;
                 GameObject pieceInstance = Instantiate(playerPiecePrefabs[team], startPosition, Quaternion.identity);
@@ -366,7 +361,7 @@ public class GameMaster : MonoBehaviour, IGameController
                 playerPieces.Add(pieceInstance.GetComponent<PlayerPiece>());
                 playerPieces[team].SetPath(GetBoardPathForTeam(team));
         }
-        Debug.Log("Player Pieces initialized!");
+        Debug.Log(playerPieces.Count + " Player Pieces initialized!");
     }
 
     private Vector3 GetStartPosition(int team)
