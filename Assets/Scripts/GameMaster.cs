@@ -17,7 +17,12 @@ public class GameMaster : MonoBehaviour, IGameController
     [SerializeField] private GameObject _killCanvas;
 
     [SerializeField] private AudioClip _killAudio; 
-    [SerializeField] private AudioClip _killedAudio; 
+    [SerializeField] private AudioClip _killedAudio;
+
+    [SerializeField] private GameObject[] redTowers = new GameObject[3];
+    [SerializeField] private GameObject[] blueTowers = new GameObject[3];
+    [SerializeField] private GameObject[] greenTowers = new GameObject[3];
+    [SerializeField] private GameObject[] yellowTowers = new GameObject[3];
     
     
     [SerializeField] private GameObject[] playerPiecePrefabs = new GameObject[4];
@@ -146,12 +151,16 @@ public class GameMaster : MonoBehaviour, IGameController
                 Debug.Log("Set Player " + i + "'s position to: " + gameState.scores[player.uuid]);
                 ++i;
                 i %= 4;
+
+                
             }
             catch (Exception e)
             {
                 Debug.LogError(e);
             }
         }
+        
+        CheckRoundsAndSetTower(gameState);
     }
 
     public void AnswerQuestion(MultiplayerManager.QuestionData questionData, Action<string> callback)
@@ -174,6 +183,57 @@ public class GameMaster : MonoBehaviour, IGameController
         yield return StartCoroutine(WaitForAnswer(questionData, (result) => answer = result));
 
         callback(answer);
+    }
+
+    private void CheckRoundsAndSetTower(MultiplayerManager.GameState gameState)
+    {
+
+        int players = gameState.players.Count;
+        int score = 0;
+        
+        if (players >= 1)
+        {
+            score = gameState.scores[gameState.players[0].uuid];
+            ShowTowers(score, redTowers);
+            Debug.Log("Setting red Towers for score: " + score);
+        }
+
+        if (players >= 2)
+        {
+            score = gameState.scores[gameState.players[1].uuid];
+            ShowTowers(score, blueTowers);
+        }
+
+        if (players >= 3)
+        {
+            score = gameState.scores[gameState.players[2].uuid];
+            ShowTowers(score, yellowTowers);
+        }
+
+        if (players >= 4)
+        {
+            score = gameState.scores[gameState.players[3].uuid];
+            ShowTowers(score, greenTowers);
+        }
+    }
+
+    private void ShowTowers(int score, GameObject[] towers)
+    {
+        if (score / 40 >= 1)
+        {
+            towers[0].GetComponent<MeshRenderer>().enabled = true;
+            Debug.Log("Activating tower 1");
+        }
+
+        if (score / 40 >= 2)
+        {
+            towers[1].GetComponent<MeshRenderer>().enabled = true;
+        }
+
+        if (score / 40 >= 3)
+        {
+            towers[2].GetComponent<MeshRenderer>().enabled = true;
+        }
     }
 
 
