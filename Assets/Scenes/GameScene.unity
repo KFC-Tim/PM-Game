@@ -56525,6 +56525,7 @@ MonoBehaviour:
   - {fileID: 620278824}
   - {fileID: 465245180}
   - {fileID: 2099000460}
+  - {fileID: 2129252408}
   - {fileID: 106361065}
   - {fileID: 1508570522}
   - {fileID: 711829806}
@@ -56534,6 +56535,7 @@ MonoBehaviour:
   - {fileID: 1707844156}
   - {fileID: 1008773898}
   - {fileID: 2019430474}
+  - {fileID: 556208650}
   - {fileID: 1949302975}
   - {fileID: 50552123}
   - {fileID: 1558234337}
@@ -56543,6 +56545,7 @@ MonoBehaviour:
   - {fileID: 1886343535}
   - {fileID: 819812552}
   - {fileID: 996646078}
+  - {fileID: 1633900461}
   - {fileID: 610068257}
   - {fileID: 2020043243}
   - {fileID: 1690789163}
@@ -56563,6 +56566,7 @@ MonoBehaviour:
   - {fileID: 1707844156}
   - {fileID: 1008773898}
   - {fileID: 2019430474}
+  - {fileID: 556208650}
   - {fileID: 1949302975}
   - {fileID: 50552123}
   - {fileID: 1558234337}
@@ -56572,6 +56576,7 @@ MonoBehaviour:
   - {fileID: 1886343535}
   - {fileID: 819812552}
   - {fileID: 996646078}
+  - {fileID: 1633900461}
   - {fileID: 610068257}
   - {fileID: 2020043243}
   - {fileID: 1690789163}
@@ -56581,6 +56586,7 @@ MonoBehaviour:
   - {fileID: 1358842001}
   - {fileID: 518878566}
   - {fileID: 466069043}
+  - {fileID: 1861033863}
   - {fileID: 1803608224}
   - {fileID: 866425005}
   - {fileID: 1156203602}
@@ -56601,6 +56607,7 @@ MonoBehaviour:
   - {fileID: 1886343535}
   - {fileID: 819812552}
   - {fileID: 996646078}
+  - {fileID: 1633900461}
   - {fileID: 610068257}
   - {fileID: 2020043243}
   - {fileID: 1690789163}
@@ -56610,6 +56617,7 @@ MonoBehaviour:
   - {fileID: 1358842001}
   - {fileID: 518878566}
   - {fileID: 466069043}
+  - {fileID: 1861033863}
   - {fileID: 1803608224}
   - {fileID: 866425005}
   - {fileID: 1156203602}
@@ -56619,6 +56627,7 @@ MonoBehaviour:
   - {fileID: 620278824}
   - {fileID: 465245180}
   - {fileID: 2099000460}
+  - {fileID: 2129252408}
   - {fileID: 106361065}
   - {fileID: 1508570522}
   - {fileID: 711829806}
@@ -56639,6 +56648,7 @@ MonoBehaviour:
   - {fileID: 1358842001}
   - {fileID: 518878566}
   - {fileID: 466069043}
+  - {fileID: 1861033863}
   - {fileID: 1803608224}
   - {fileID: 866425005}
   - {fileID: 1156203602}
@@ -56648,6 +56658,7 @@ MonoBehaviour:
   - {fileID: 620278824}
   - {fileID: 465245180}
   - {fileID: 2099000460}
+  - {fileID: 2129252408}
   - {fileID: 106361065}
   - {fileID: 1508570522}
   - {fileID: 711829806}
@@ -56657,6 +56668,7 @@ MonoBehaviour:
   - {fileID: 1707844156}
   - {fileID: 1008773898}
   - {fileID: 2019430474}
+  - {fileID: 556208650}
   - {fileID: 1949302975}
   - {fileID: 50552123}
   - {fileID: 1558234337}
@@ -64253,6 +64265,8 @@ MonoBehaviour:
   fieldEventController: {fileID: 1040871609}
   _killText: {fileID: 285521321}
   _killCanvas: {fileID: 898169556}
+  _killAudio: {fileID: 0}
+  _killedAudio: {fileID: 0}
   playerPiecePrefabs:
   - {fileID: 1560630350}
   - {fileID: 1073280561}
