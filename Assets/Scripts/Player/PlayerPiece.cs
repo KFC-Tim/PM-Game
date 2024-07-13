@@ -47,10 +47,16 @@ public class PlayerPiece : MonoBehaviour
 
     public void SetPosition(int position)
     {
-        if (((currentPosition%40) / 10) < ((position%40) / 10))
+        position %= 40;
+        
+        if (position != currentPosition)
         {
-            transform.Rotate(0, 90, 0);
+            if ((currentPosition / 10) < (position / 10) || currentPosition > position)
+            {
+                transform.Rotate(0, 90, 0);
+            }
         }
+        
         currentPosition = position%40;  
         transform.position = path[currentPosition].transform.position;
     }
