@@ -17,6 +17,7 @@ public class MultiplayerManager : MonoBehaviour
     private List<QuestionData> _questionDataQueue = new List<QuestionData>();
     private bool _isReady = true;
     private static MultiplayerManager Instance;
+    private ScoreboardManager _scoreboardManager = new ScoreboardManager();
 
     void Start()
     {
@@ -128,6 +129,34 @@ public class MultiplayerManager : MonoBehaviour
         SwitchToGameScene();
     }
 
+    public string[] GetPlayerNamesArray()
+    {
+        if (_gameState.GameState == null || _gameState.GameState.players == null)
+        {
+            Debug.LogError("GameState or players list is not set in MultiplayerManager");
+            return new string[0];
+        }
+        return _gameState.GameState.players.Select(player => player.name).ToArray();
+    }
+    public string[] GetPlayerUUIDsArray()
+    {
+        if (_gameState.GameState == null || _gameState.GameState.players == null)
+        {
+            Debug.LogError("GameState or players list is not set in MultiplayerManager");
+            return new string[0];
+        }
+        return _gameState.GameState.players.Select(player => player.uuid).ToArray();
+    }
+    public Dictionary<string, int> GetScores()
+    {
+        if (_gameState.GameState == null || _gameState.GameState.scores == null)
+        {
+            Debug.LogError("GameState or scores dictionary is not set in MultiplayerManager");
+            return new Dictionary<string, int>();
+        }
+        return new Dictionary<string, int>(_gameState.GameState.scores);
+    }
+
 
     private void OnGameSceneLoaded()
     {
@@ -147,6 +176,7 @@ public class MultiplayerManager : MonoBehaviour
         {
             _gameMasterScript.UpdateGameState(gameState);
             Debug.Log("Loading: " + JsonUtility.ToJson(gameState));
+            _scoreboardManager.InitializeScoreboard(GetPlayerNamesArray(), GetPlayerUUIDsArray(), GetScores());
         }
         _gameDataQueue.Clear();
     }
@@ -323,6 +353,7 @@ public class MultiplayerManager : MonoBehaviour
         Debug.Log(_gameState);
         Debug.Log("GameState: " + JsonUtility.ToJson(_gameState.GameState));
         _gameMasterScript.UpdateGameState(_gameState.GameState);
+        _scoreboardManager.InitializeScoreboard(GetPlayerNamesArray(), GetPlayerUUIDsArray(), GetScores());
     }
 
     private void HandleJoinGame(ServerMessage data)
